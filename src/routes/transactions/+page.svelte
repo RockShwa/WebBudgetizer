@@ -1,9 +1,9 @@
 <div class="button-row">
     <button class="button">Manage Categories</button>
     <button class="button">Manage Goals</button>
-    <button class="button">Upload</button>
-    <button class="button">Month</button>
-    <button class="button">Year</button>
+    <select class="select">Upload</select>
+    <select class="select">Month</select>
+    <select class="select">Year</select>
     <button class="button">Back</button>
 </div>
 
@@ -12,7 +12,7 @@
 </div>
 
 <style>
-    .button {
+    .button, select{
         width: auto;
         box-shadow: var(--shadow-sm);
         border-radius: var(--radius-lg);
