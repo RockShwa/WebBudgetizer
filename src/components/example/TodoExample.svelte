@@ -1,8 +1,10 @@
 <script>
     let todo = '';
-
+    import {addTodo} from "../../stores/todoStore.ts"
     // we want a centralized store for all of our todos, so we're gonna import that here
     const handleSubmit = () => {
+        addTodo(todo);
+        todo = ''; // reset todo text
         console.log("submitting")
     }
 </script>
