@@ -1,3 +1,7 @@
+<head>
+    <title>Transactions</title>
+</head>
+
 <div class="button-row">
     <button class="button">Manage Categories</button>
     <button class="button">Manage Goals</button>
