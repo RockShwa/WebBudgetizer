@@ -1,7 +1,21 @@
 <script>
-	import TodoExample from "../components/example/TodoExample.svelte";
-    import Todo from "../components/example/Todo.svelte";
-    import {todos} from "../stores/todoStore.ts";
+	// import TodoExample from "../components/example/TodoExample.svelte";
+    // import Todo from "../components/example/Todo.svelte";
+    // import {todos} from "../stores/todoStore.ts";
+
+    import { goto } from '$app/navigation';
+  
+    function navigateToTransactions() {
+        goto('/transactions');
+    }
+
+    function navigateToMonthlySum() {
+        goto('/monthlySummaries');
+    }
+
+    function navigateToYearlySum() {
+        goto('/yearlySummaries');
+    }
 </script>
 
 <head>
@@ -20,10 +34,10 @@
 </main>
 
 <div class="button-grid">
-        <button type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
-        <button type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
+        <button on:click={navigateToTransactions} id="transactionBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
+        <button on:click={navigateToMonthlySum} id="yearlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
         <button></button>
-        <button type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
+        <button on:click={navigateToYearlySum} id="monthlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
 </div>
 
 <style> 
