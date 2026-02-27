@@ -34,10 +34,10 @@
 </main>
 
 <div class="button-grid">
-        <button on:click={navigateToTransactions} id="transactionBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
-        <button on:click={navigateToMonthlySum} id="yearlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
+        <button onclick={navigateToTransactions} id="transactionBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
+        <button onclick={navigateToMonthlySum} id="yearlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
         <button></button>
-        <button on:click={navigateToYearlySum} id="monthlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
+        <button onclick={navigateToYearlySum} id="monthlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
 </div>
 
 <style> 
