@@ -36,6 +36,7 @@
 <div class="button-grid">
         <button onclick={navigateToTransactions} id="transactionBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
         <button onclick={navigateToMonthlySum} id="yearlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
+        <!-- svelte-ignore a11y_consider_explicit_label -->
         <button></button>
         <button onclick={navigateToYearlySum} id="monthlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
 </div>
