@@ -4,6 +4,8 @@ interface Category {
     text: string;
     exclude: boolean;
     id: number;
+    goal: number;
+    defaultGoal: number;
 }
 // our writable thing starts out as an empty array
 export const categories = writable<Category[]>([]);
@@ -16,7 +18,7 @@ export const addCategory = (text: string) => {
     categories.update( (cur) => {
         // id: Date.now() is an easy way to make a semi-unique id
         // new Todo is cur + the New Todo
-        const newCategories = [... cur, {text, exclude: false, id: Date.now()}];
+        const newCategories = [... cur, {text, exclude: false, id: Date.now(), goal: 0, defaultGoal: 0}];
         return newCategories;
     })
 }
