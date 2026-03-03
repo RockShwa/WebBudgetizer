@@ -8,7 +8,8 @@
         }
 
         export let category: Category;
-        export let index: number;
+        // svelte-ignore export_let_unused
+                export let index: number;
 </script>
 
 <!-- TODO: exclude category from transaction display on:change={() => excludeTodo(category.id)} -->

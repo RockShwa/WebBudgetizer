@@ -35,12 +35,3 @@
         <Category category={category} index={category.id}></Category>
     {/each}
 </main>
-
-
-<style>
-    .button {
-        display: flex;
-        justify-content: flex-end;
-        margin: 3px;
-    }
-</style>
