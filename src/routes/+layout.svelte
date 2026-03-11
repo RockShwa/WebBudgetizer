@@ -4,13 +4,15 @@
 	import '../app.css'
 
 	// this is like the Hello Svelte thing
-	let { children } = $props();
 </script>
 
 <!-- <svelte:head>
 	<link rel="icon" href={favicon} />
 </svelte:head> -->
+
+<slot />
+
+
 		
-{@render children()}
 
 

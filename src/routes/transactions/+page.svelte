@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { goto } from '$app/navigation';
+    import { resolve } from '$app/paths';
     import { parseCSVFile, initializeElements } from './transactions';
     import { onMount } from 'svelte';
 
@@ -18,128 +18,181 @@
         }
     }
 
-	export function navigateToManageCategories() {
-        goto('/manageCategories');
-    }
-
-    export function navigateToManageGoals() {
-        goto('/manageGoals');
-    }
-
     export function navigateBack() {
         history.go(-1);
     }
 
+    // get transactionTimes from sql query
+    export function sortTime(transactionTimes: number[]) {
+        let mid;
+        let left: number[];
+        let right: number[];
+
+        if (transactionTimes.length > 1) {
+            mid = transactionTimes.length;
+            left = transactionTimes.slice(0, mid);
+            right = transactionTimes.slice(mid, transactionTimes.length - 1);
+
+            sortTime(left);
+            sortTime(right);
+
+            let i: number = 0;
+            let j: number = 0;
+            let k: number = 0;
+
+            while (i < left.length && j < right.length) {
+                if (left[i] < right[j]) {
+                    transactionTimes[k] = left[i];
+                    i++;
+                } else {
+                    transactionTimes[k] = right[j]
+                    j++;
+                } 
+                k++;
+            }
+
+            while (i < left.length) {
+                transactionTimes[k] = left[i];
+                i++;
+                k++;
+            }
+
+            while (j < right.length) {
+                transactionTimes[k] = right[j];
+                j++;
+                k++;
+            }
+        }
+    }
+
+    export function sortAmount(transactionAmounts: number[]) {
+        let mid;
+        let left: number[];
+        let right: number[];
+
+        if (transactionAmounts.length > 1) {
+            mid = transactionAmounts.length;
+            left = transactionAmounts.slice(0, mid);
+            right = transactionAmounts.slice(mid, transactionAmounts.length - 1);
+
+            sortTime(left);
+            sortTime(right);
+
+            let i: number = 0;
+            let j: number = 0;
+            let k: number = 0;
+
+            while (i < left.length && j < right.length) {
+                if (left[i] < right[j]) {
+                    transactionAmounts[k] = left[i];
+                    i++;
+                } else {
+                    transactionAmounts[k] = right[j]
+                    j++;
+                } 
+                k++;
+            }
+
+            while (i < left.length) {
+                transactionAmounts[k] = left[i];
+                i++;
+                k++;
+            }
+
+            while (j < right.length) {
+                transactionAmounts[k] = right[j];
+                j++;
+                k++;
+            }
+        }
+    }
+
 </script>
 
-<head>
+<svelte:head>
     <title>Transactions</title>
-</head>
+</svelte:head>
 
 
-<div class="button-row">
-    <button onclick={navigateToManageCategories} class="button">Manage Categories</button>
-    <button onclick={navigateToManageGoals} class="button">Manage Goals</button>
+<div class="flex my-2 justify-items-normal">
+    <a href={resolve("/manageCategories")} class="bg-blue-600 p-1 rounded-sm">Manage Categories</a>
+    <a href={resolve("/manageGoals")} class="bg-blue-600 p-1 rounded-sm">Manage Goals</a>   
+    
+    <label class="select">Sort
+        <select class="select">
+            <option on:click={() => sortTime([])}>Timestamp</option>
+            <option on:click={() => sortAmount([])}>Amount</option>
+        </select>
+    </label>
 
-    <label for="file">Upload</label>
-    <!-- add a thing where it only shows the table if correct month/year is selected -->
-    <!-- store table in the database -->
-    <!-- in uploads ull need to check for duplicates -->
-    <input onchange={handleFileChange} type="file" id="file" class="hidden" />
+    <label class="button">Upload
+        <!-- add a thing where it only shows the table if correct month/year is selected -->
+        <!-- store table in the database -->
+        <!-- in uploads ull need to check for duplicates -->
+        <input on:change={handleFileChange} type="file" id="file" class="hidden" />
+    </label>
 
-    <label for="upload">Month</label>
-    <select class="select">
-        <option>January</option>
-        <option>Feburary</option>
-        <option>March</option>
-        <option>April</option>
-        <option>May</option>
-        <option>June</option>
-        <option>July</option>
-        <option>August</option>
-        <option>September</option>
-        <option>October</option>
-        <option>November</option>
-        <option>December</option>
-    </select>
+
+    <label>Month
+        <select class="select">
+            <option>January</option>
+            <option>Feburary</option>
+            <option>March</option>
+            <option>April</option>
+            <option>May</option>
+            <option>June</option>
+            <option>July</option>
+            <option>August</option>
+            <option>September</option>
+            <option>October</option>
+            <option>November</option>
+            <option>December</option>
+        </select>
+    </label>
 
     <!-- generate if u have time with for loop -->
-    <label for="upload">Year</label>
-    <select class="select">
-        <option>2026</option>
-        <option>2025</option>
-        <option>2024</option>
-        <option>2023</option>
-        <option>2022</option>
-        <option>2021</option>
-        <option>2020</option>
-        <option>2019</option>
-        <option>2018</option>
-        <option>2017</option>
-        <option>2016</option>
-        <option>2015</option>
-        <option>2014</option>
-        <option>2013</option>
-        <option>2012</option>
-        <option>2011</option>
-        <option>2010</option>
-        <option>2009</option>
-        <option>2008</option>
-        <option>2007</option>
-        <option>2006</option>
-        <option>2005</option>
-        <option>2004</option>
-        <option>2003</option>
-        <option>2002</option>
-        <option>2001</option>
-        <option>2000</option>
-        <option>1999</option>
-        <option>1998</option>
-        <option>1997</option>
-        <option>1996</option>
-        <option>1995</option>
-        <option>1994</option>
-        <option>1993</option>
-        <option>1992</option>
-        <option>1991</option>
-        <option>1990</option>
-    </select>
+    <label>Year
+        <select class="select">
+            <option>2026</option>
+            <option>2025</option>
+            <option>2024</option>
+            <option>2023</option>
+            <option>2022</option>
+            <option>2021</option>
+            <option>2020</option>
+            <option>2019</option>
+            <option>2018</option>
+            <option>2017</option>
+            <option>2016</option>
+            <option>2015</option>
+            <option>2014</option>
+            <option>2013</option>
+            <option>2012</option>
+            <option>2011</option>
+            <option>2010</option>
+            <option>2009</option>
+            <option>2008</option>
+            <option>2007</option>
+            <option>2006</option>
+            <option>2005</option>
+            <option>2004</option>
+            <option>2003</option>
+            <option>2002</option>
+            <option>2001</option>
+            <option>2000</option>
+            <option>1999</option>
+            <option>1998</option>
+            <option>1997</option>
+            <option>1996</option>
+            <option>1995</option>
+            <option>1994</option>
+            <option>1993</option>
+            <option>1992</option>
+            <option>1991</option>
+            <option>1990</option>
+        </select>
+    </label>
 
 
-    <button onclick={navigateBack} class="button">Back</button>
+    <a href={resolve("/")} class="button">Back</a>   
 </div>
-
-<div>
-    <!-- will be generated by JavaScript -->
-    <table id="table"></table>
-</div>
-
-<style>
-    .button, select, label{
-        width: auto;
-        box-shadow: var(--shadow-sm);
-        border-radius: var(--radius-lg);
-        background-color: var(--color-blue-500);
-        color: white;
-        padding: 7px;
-    }
-
-    .button:hover {
-        background-color: rgb(53, 53, 255);
-    }
-
-    .table {
-        border-collapse: collapse;
-        width: auto;
-        height: auto;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .th, td {
-        padding: 10px;
-        
-    }
-
-    /* zebra striped table */
-    tr:nth-child(even) {background-color: #f2f2f2;}
-</style>

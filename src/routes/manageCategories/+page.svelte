@@ -2,7 +2,7 @@
     let category = '';
     import { addCategory, categories } from "../../stores/categoryStore";
     import Category from "../../components/Category.svelte";
-	import { goto } from "$app/navigation";
+    import { resolve } from '$app/paths';
 
     // we want a centralized store for all of our todos, so we're gonna import that here
     const handleSubmit = () => {
@@ -10,19 +10,18 @@
         category = ''; // reset todo text
     }
 
-    export function navigateBack() {
-        goto('../transactions')
-    }
 </script>
 
-<head>
+<svelte:head>
     <title>Manage Categories</title>
-</head>
+</svelte:head>
 
 <main>
     <div class="flex flex-row justify-between m-3">
         <div class="text-2xl font-bold">Manage Categories</div>
-        <button on:click={navigateBack} class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1">Back</button>
+        <a href={resolve("/transactions")}>
+            <button class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1">Back</button>
+        </a>
     </div>
 
     <form class="my-6 mx-3" on:submit|preventDefault={handleSubmit}>
@@ -36,7 +35,7 @@
         </div>
     </form>
 
-    {#each $categories as category}
+    {#each $categories as category (category.id)}
         <Category category={category} index={category.id} goal={0} defaultGoal={0}></Category>
     {/each}
 </main>

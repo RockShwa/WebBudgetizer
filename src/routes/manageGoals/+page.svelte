@@ -1,21 +1,19 @@
 <script>
-	import { goto } from "$app/navigation";
     import { categories } from "../../stores/categoryStore";
     import Category from "../../components/Category.svelte";
-
-    export function navigateBack() {
-        goto('../transactions')
-    }
+    import { resolve } from '$app/paths';
 </script>
 
-<head>
+<svelte:head>
     <title>Manage Goals</title>
-</head>
+</svelte:head>
 
 <main>
     <div class="flex flex-row justify-between m-3">
         <div class="text-2xl font-bold">Manage Goals</div>
-        <button on:click={navigateBack} class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1">Back</button>
+        <a href={resolve("/transactions")}>
+            <button class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1">Back</button>
+        </a>
     </div>
 
     <!-- 
@@ -25,7 +23,7 @@
     6. get rid of the delete button
      -->
 
-    {#each $categories as category}
+    {#each $categories as category (category.id)}
     <!-- get goal and default once u make a store for goals -->
         <Category category={category} index={category.id} goal={0} defaultGoal={0}></Category>
     {/each}

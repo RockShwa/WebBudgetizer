@@ -1,44 +1,26 @@
 <script>
-	// import TodoExample from "../components/example/TodoExample.svelte";
-    // import Todo from "../components/example/Todo.svelte";
-    // import {todos} from "../stores/todoStore.ts";
-
-    import { goto } from '$app/navigation';
-  
-    function navigateToTransactions() {
-        goto('/transactions');
-    }
-
-    function navigateToMonthlySum() {
-        goto('/monthlySummaries');
-    }
-
-    function navigateToYearlySum() {
-        goto('/yearlySummaries');
-    }
+    import { resolve } from '$app/paths';
 </script>
 
-<head>
+<svelte:head>
     <title>Dashboard</title>
-</head>
+</svelte:head>
 
 <main>
     <h1 class="text-2xl font-bold text-center text-gray-800 md:text-3xl my-6">FreeBudgetPro</h1>
-    
-    <!-- <TodoExample/> -->
-    <!--writable can't really be accessed directly but it kinda can with the $, the $ gets the data-->
-    <!-- this is a for each loop
-    {#each $todos as todo}
-        <Todo todo={todo} index={todo.id} />
-    {/each} -->
 </main>
 
 <div class="button-grid">
-        <button onclick={navigateToTransactions} id="transactionBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
-        <button onclick={navigateToMonthlySum} id="yearlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
-        <!-- svelte-ignore a11y_consider_explicit_label -->
+    <a href={resolve("/transactions")}>
+        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
+    </a>     
+    <a href={resolve("/yearlySummaries")}>
+        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
+    </a>  
         <button></button>
-        <button onclick={navigateToYearlySum} id="monthlyBut" type="submit" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
+    <a href={resolve("/monthlySummaries")}>   
+        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
+    </a> 
 </div>
 
 <style> 

@@ -1,6 +1,6 @@
-<head>
+<svelte:head>
     <title>Monthly Summaries</title>
-</head>
+</svelte:head>
 
 <div class="flex flex-col">
     <div class="flex flex-row items-center">
