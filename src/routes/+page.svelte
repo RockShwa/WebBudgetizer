@@ -12,14 +12,17 @@
 
 <div class="button-grid">
     <a href={resolve("/transactions")}>
-        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Transactions</button>
+        <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-100% px-[70%] py-[15%]">
+            Transactions</button>
     </a>     
     <a href={resolve("/yearlySummaries")}>
-        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Yearly Summaries</button>
+        <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-[150%] px-[30%] py-[10%]">
+            Yearly Summaries</button>
     </a>  
         <button></button>
     <a href={resolve("/monthlySummaries")}>   
-        <button type="button" class="w-60 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2">Monthly Summaries</button>
+        <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-[150%] px-[15%] py-[10%]">
+            Monthly Summaries</button>
     </a> 
 </div>
 

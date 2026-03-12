@@ -19,6 +19,7 @@
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@types/mssql": "^9.1.9",
 		"@types/node": "^24",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
@@ -36,10 +37,14 @@
 		"@sveltejs/adapter-node": "^5.4.0",
 		"@tailwindcss/postcss": "^4.1.18",
 		"@tailwindcss/vite": "^4.1.18",
+		"@types/regression": "^2.0.6",
 		"autoprefixer": "^10.4.24",
+		"chart.js": "^4.5.1",
 		"csv-parse": "^6.1.0",
+		"mssql": "^12.2.0",
 		"papaparse": "^5.5.3",
 		"postcss": "^8.5.6",
+		"regression": "^2.0.1",
 		"tailwindcss": "^4.1.18"
 	}
 }
