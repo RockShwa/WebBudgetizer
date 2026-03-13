@@ -1,5 +1,6 @@
 import sql from "mssql"
 
+// create database configuration
 const config: sql.config = {
     server: "localhost",
     database: "WebBudgetizer",
@@ -8,6 +9,7 @@ const config: sql.config = {
     }
 };
 
+// function for querying the database with a given string query
 export async function queryDatabase(query: string) {
   const pool = await sql.connect(config);
   const result = await pool.request().query(query);

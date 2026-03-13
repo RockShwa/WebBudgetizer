@@ -11,6 +11,7 @@
 </main>
 
 <div class="button-grid">
+    <!-- px-[70%] and properties like it will adapt to the viewport -->
     <a href={resolve("/transactions")}>
         <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-100% px-[70%] py-[15%]">
             Transactions</button>

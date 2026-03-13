@@ -14,25 +14,31 @@
     }
 
     export async function graphRegression() {
+        // query database for the array of timestamps for each transaction
         const timestamp: number[] = await queryDatabase("SELECT timestamp FROM Transactions");
 
+        // create the best fit data (two relevant points)
         const bestFit: regression.DataPoint[] = [
             // x is time, y is amount
             [timestamp[0], calculateRegression().equation[1] ],
             [timestamp[1], calculateRegression().equation[0] * timestamp[1] + calculateRegression().equation[1] ]
         ];
 
+        // onMount is what is used to ensure that the Chart is created before it tries to do anything with it
         onMount(() => {
             new Chart(canvas, {
+                // chart is a scatter plot
                 type: 'scatter',
                 data: {
                     datasets: [
                         {
+                            // first data set will be the scatter plot
                             label: "Category Tracking",
                             data: data,
                             backgroundColor: "blue"
                         },
                         {
+                            // second data set is the line of best fit
                             label: "Line of Best Fit",
                             data: bestFit,
                             type: "line",
@@ -46,12 +52,15 @@
 
     export function caluclateSavingPrediction(a: number, income: number, m: number) {
 
-        // m is line of best fit with data of change in income over change in savings
+        // m is slope of the line of best fit with data of change in income over change in savings
+        // income is disposable income
+        // a is the amount you would save with no income
 
         const A = a;
         const d_y = income;
         const mps = m;
 
+        // the linear equation - returns the amount saved at a particular amount of disposable income
         return A + mps * d_y;
     }
 </script>

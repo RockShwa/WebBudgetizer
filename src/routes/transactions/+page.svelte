@@ -2,6 +2,7 @@
     import { resolve } from '$app/paths';
     import { parseCSVFile, initializeElements } from './transactions';
     import { onMount } from 'svelte';
+    import { queryDatabase } from '$lib/server/db';
 
     onMount(() => {
         initializeElements();
@@ -24,21 +25,30 @@
 
     // get transactionTimes from sql query
     export function sortTime(transactionTimes: number[]) {
+        // create the 3 beginning arrays
         let mid;
         let left: number[];
         let right: number[];
 
+        // as long as the array is greater than 1 unit long
         if (transactionTimes.length > 1) {
+            // recursively slice the arrays in half
             mid = transactionTimes.length;
             left = transactionTimes.slice(0, mid);
             right = transactionTimes.slice(mid, transactionTimes.length - 1);
 
+            // sort those sliced arrays
             sortTime(left);
             sortTime(right);
 
+            // create indicies
             let i: number = 0;
             let j: number = 0;
             let k: number = 0;
+
+            // as long as the indicies are less than right and left's length, 
+            // we're going to set the originial array equal to the left if it's
+            // less than the right, and vice versa
 
             while (i < left.length && j < right.length) {
                 if (left[i] < right[j]) {
@@ -50,6 +60,8 @@
                 } 
                 k++;
             }
+
+            // merge the remaining left and right arrays
 
             while (i < left.length) {
                 transactionTimes[k] = left[i];
@@ -107,6 +119,12 @@
         }
     }
 
+    let transactionData: number[] = [];
+
+    onMount(async () => {
+        transactionData = await queryDatabase("SELECT transactions FROM Transactions");
+    });
+
 </script>
 
 <svelte:head>
@@ -118,10 +136,11 @@
     <a href={resolve("/manageCategories")} class="bg-blue-600 p-1 rounded-sm">Manage Categories</a>
     <a href={resolve("/manageGoals")} class="bg-blue-600 p-1 rounded-sm">Manage Goals</a>   
     
+    <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
     <label class="select">Sort
         <select class="select">
-            <option on:click={() => sortTime([])}>Timestamp</option>
-            <option on:click={() => sortAmount([])}>Amount</option>
+            <option on:click={() => sortTime(transactionData)}>Timestamp</option>
+            <option on:click={() => sortAmount(transactionData)}>Amount</option>
         </select>
     </label>
 
