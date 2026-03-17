@@ -1,8 +1,8 @@
 <script lang="ts">
     import * as regression from 'regression';
-    import { onMount } from "svelte";
-    import Chart from "chart.js/auto";
-    import { queryDatabase } from '$lib/server/db';
+    // import { onMount } from "svelte";
+    // import Chart from "chart.js/auto";
+    //import { queryDatabase } from '$lib/server/db';
 
     const data: regression.DataPoint[] = [[0, 1], [2,3]];
     let canvas: HTMLCanvasElement;
@@ -13,42 +13,42 @@
         return result;
     }
 
-    export async function graphRegression() {
-        // query database for the array of timestamps for each transaction
-        const timestamp: number[] = await queryDatabase("SELECT timestamp FROM Transactions");
+    // export async function graphRegression() {
+    //     // query database for the array of timestamps for each transaction
+    //     const timestamp: number[] = await queryDatabase("SELECT timestamp FROM Transactions");
 
-        // create the best fit data (two relevant points)
-        const bestFit: regression.DataPoint[] = [
-            // x is time, y is amount
-            [timestamp[0], calculateRegression().equation[1] ],
-            [timestamp[1], calculateRegression().equation[0] * timestamp[1] + calculateRegression().equation[1] ]
-        ];
+    //     // create the best fit data (two relevant points)
+    //     const bestFit: regression.DataPoint[] = [
+    //         // x is time, y is amount
+    //         [timestamp[0], calculateRegression().equation[1] ],
+    //         [timestamp[1], calculateRegression().equation[0] * timestamp[1] + calculateRegression().equation[1] ]
+    //     ];
 
-        // onMount is what is used to ensure that the Chart is created before it tries to do anything with it
-        onMount(() => {
-            new Chart(canvas, {
-                // chart is a scatter plot
-                type: 'scatter',
-                data: {
-                    datasets: [
-                        {
-                            // first data set will be the scatter plot
-                            label: "Category Tracking",
-                            data: data,
-                            backgroundColor: "blue"
-                        },
-                        {
-                            // second data set is the line of best fit
-                            label: "Line of Best Fit",
-                            data: bestFit,
-                            type: "line",
-                            borderColor: "red"
-                        }
-                    ]
-                }
-            });
-        });    
-    }
+    //     // onMount is what is used to ensure that the Chart is created before it tries to do anything with it
+    //     onMount(() => {
+    //         new Chart(canvas, {
+    //             // chart is a scatter plot
+    //             type: 'scatter',
+    //             data: {
+    //                 datasets: [
+    //                     {
+    //                         // first data set will be the scatter plot
+    //                         label: "Category Tracking",
+    //                         data: data,
+    //                         backgroundColor: "blue"
+    //                     },
+    //                     {
+    //                         // second data set is the line of best fit
+    //                         label: "Line of Best Fit",
+    //                         data: bestFit,
+    //                         type: "line",
+    //                         borderColor: "red"
+    //                     }
+    //                 ]
+    //             }
+    //         });
+    //     });    
+    // }
 
     export function caluclateSavingPrediction(a: number, income: number, m: number) {
 

@@ -2,7 +2,8 @@
     import { resolve } from '$app/paths';
     import { parseCSVFile, initializeElements } from './transactions';
     import { onMount } from 'svelte';
-    import { queryDatabase } from '$lib/server/db';
+
+    export let data: { transactionData: { id: number; timestamp: string; amount: number; category: string; description: string; }[]};
 
     onMount(() => {
         initializeElements();
@@ -24,11 +25,11 @@
     }
 
     // get transactionTimes from sql query
-    export function sortTime(transactionTimes: number[]) {
+    export function sortTime(transactionTimes: Date[]) {
         // create the 3 beginning arrays
         let mid;
-        let left: number[];
-        let right: number[];
+        let left: Date[];
+        let right: Date[];
 
         // as long as the array is greater than 1 unit long
         if (transactionTimes.length > 1) {
@@ -77,18 +78,18 @@
         }
     }
 
-    export function sortAmount(transactionAmounts: number[]) {
+    export function sortAmount(transactionAmounts: Date[]) {
         let mid;
-        let left: number[];
-        let right: number[];
+        let left: Date[];
+        let right: Date[];
 
         if (transactionAmounts.length > 1) {
-            mid = transactionAmounts.length;
+            mid = (transactionAmounts.length / 2.0);
             left = transactionAmounts.slice(0, mid);
-            right = transactionAmounts.slice(mid, transactionAmounts.length - 1);
+            right = transactionAmounts.slice(mid);
 
-            sortTime(left);
-            sortTime(right);
+            sortAmount(left);
+            sortAmount(right);
 
             let i: number = 0;
             let j: number = 0;
@@ -119,11 +120,9 @@
         }
     }
 
-    let transactionData: number[] = [];
+    let transactionData = data.transactionData ?? [];
 
-    onMount(async () => {
-        transactionData = await queryDatabase("SELECT transactions FROM Transactions");
-    });
+    let dateObjects: Date[] = transactionData.map(t => new Date(t.timestamp));
 
 </script>
 
@@ -139,8 +138,8 @@
     <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
     <label class="select">Sort
         <select class="select">
-            <option on:click={() => sortTime(transactionData)}>Timestamp</option>
-            <option on:click={() => sortAmount(transactionData)}>Amount</option>
+            <option on:click={() => sortTime(dateObjects)}>Timestamp</option>
+            <option on:click={() => sortAmount(dateObjects)}>Amount</option>
         </select>
     </label>
 
@@ -214,4 +213,27 @@
 
 
     <a href={resolve("/")} class="button">Back</a>   
+
+    <table class="border-collapse border border-gray-300">
+    <thead>
+        <tr>
+            <th class="border border-gray-300 p-1">ID</th>
+            <th class="border border-gray-300 p-1">Timestamp</th>
+            <th class="border border-gray-300 p-1">Amount</th>
+            <th class="border border-gray-300 p-1">Category</th>
+            <th class="border border-gray-300 p-1">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {#each transactionData as t (t.id)}
+        <tr>
+            <td class="border border-gray-300 p-1">{t.id}</td>
+            <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
+            <td class="border border-gray-300 p-1">${t.amount.toFixed(2)}</td>
+            <td class="border border-gray-300 p-1">{t.category}</td>
+            <td class="border border-gray-300 p-1">{t.description}</td>
+        </tr>
+        {/each}
+    </tbody>
+</table>
 </div>
