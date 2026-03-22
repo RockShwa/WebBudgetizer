@@ -1,27 +1,14 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
 	import { SvelteSet } from 'svelte/reactivity';
-    import { parseCSVFile, initializeElements } from './transactions';
     import { onMount } from 'svelte';
 
     export let data: { transactionData: { id: number; timestamp: string; amount: number; category: string; description: string; }[]};
 
     onMount(() => {
-        initializeElements();
         createMonthOptions();
         createYearOptions();
     });
-
-    // registers the onchange event
-    // gets file input pased on event
-    // does input.files exist (files selected) and ensures at least one file was picked
-    // passes first file to generate a table
-    export function handleFileChange(e: Event) {
-        const input = e.target as HTMLInputElement;
-        if (input.files && input.files.length > 0) {
-            parseCSVFile(input.files[0]);
-        }
-    }
 
     export function navigateBack() {
         history.go(-1);

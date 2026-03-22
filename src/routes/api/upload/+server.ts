@@ -9,6 +9,7 @@ await sql.connect(config);
 type TransactionRow = {
     Date: string;
     Amount: string; // CSV parser returns strings by default
+    Category: string;
     Description: string;
 };
 
@@ -36,7 +37,7 @@ export async function POST({ request}) {
     for (const row of records) {
         await sql.query`
             INSERT INTO Transactions (timestamp, amount, description, category)
-            VALUES (${parseDate(row.Date)}, ${parseFloat(row.Amount)}, ${row.Description}, ${'Uncategorized'})
+            VALUES (${parseDate(row.Date)}, ${parseFloat(row.Amount)}, ${row.Description}, ${row.Category})
         `;
     }
 
