@@ -182,59 +182,60 @@
 </svelte:head>
 
 
-<div class="flex my-2 justify-items-normal">
-    <a href={resolve("/manageCategories")} class="bg-blue-600 p-1 rounded-sm">Manage Categories</a>
-    <a href={resolve("/manageGoals")} class="bg-blue-600 p-1 rounded-sm">Manage Goals</a>   
-    
-    <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
-    <label class="select">Sort
-        <select class="select">
-            <option on:click={() => sortTime(dateObjects)}>Timestamp</option>
-            <option on:click={() => sortAmount(dateObjects)}>Amount</option>
-        </select>
-    </label>
+<div class="flex my-2 flex-col">
+    <!-- menu div -->
+    <div class="flex">
+        <a href={resolve("/manageCategories")} class="bg-blue-600 rounded-sm">Manage Categories</a>
+        <a href={resolve("/manageGoals")} class="bg-blue-600 rounded-sm">Manage Goals</a>   
+        
+        <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
+        <label class="bg-blue-600 rounded-sm">Sort
+            <select class="select">
+                <option on:click={() => sortTime(dateObjects)}>Timestamp</option>
+                <option on:click={() => sortAmount(dateObjects)}>Amount</option>
+            </select>
+        </label>
 
-    <input on:change={uploadFile} type="file" id="file" />
-    <!-- <button on:click={uploadFile}>Upload
-        add a thing where it only shows the table if correct month/year is selected -->
-        <!-- store table in the database -->
-        <!-- in uploads ull need to check for duplicates -->
-    <!-- </button> --> 
+        <label class="bg-blue-600 rounded-sm"> Upload
+            <input on:change={uploadFile} type="file" id="file" class="hidden"/>
+        </label>
 
+        <label class="bg-blue-600 rounded-sm">Month
+            <select class="select" id="month-select"></select>
+        </label>
 
-    <label>Month
-        <select class="select" id="month-select"></select>
-    </label>
-
-    <!-- generate if u have time with for loop -->
-    <label>Year
-        <select class="select" id="year-select">
-        </select>
-    </label>
+        <label class="bg-blue-600 rounded-sm">Year
+            <select class="select" id="year-select">
+            </select>
+        </label>
 
 
-    <a href={resolve("/")} class="button">Back</a>   
+        <a href={resolve("/")} class="bg-blue-600 rounded-sm">Back</a>  
+    </div> 
 
-    <table class="border-collapse border border-gray-300">
-    <thead>
-        <tr>
-            <th class="border border-gray-300 p-1">ID</th>
-            <th class="border border-gray-300 p-1">Timestamp</th>
-            <th class="border border-gray-300 p-1">Amount</th>
-            <th class="border border-gray-300 p-1">Category</th>
-            <th class="border border-gray-300 p-1">Description</th>
-        </tr>
-    </thead>
-    <tbody>
-        {#each transactionData as t (t.id)}
-        <tr>
-            <td class="border border-gray-300 p-1">{t.id}</td>
-            <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
-            <td class="border border-gray-300 p-1">${t.amount}</td>
-            <td class="border border-gray-300 p-1">{t.category}</td>
-            <td class="border border-gray-300 p-1">{t.description}</td>
-        </tr>
-        {/each}
-    </tbody>
-</table>
+    <!-- table div -->
+    <div class="flex">
+        <table class="border-collapse border border-gray-300">
+            <thead>
+                <tr>
+                    <th class="border border-gray-300 p-1">ID</th>
+                    <th class="border border-gray-300 p-1">Timestamp</th>
+                    <th class="border border-gray-300 p-1">Amount</th>
+                    <th class="border border-gray-300 p-1">Category</th>
+                    <th class="border border-gray-300 p-1">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each transactionData as t (t.id)}
+                <tr>
+                    <td class="border border-gray-300 p-1">{t.id}</td>
+                    <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
+                    <td class="border border-gray-300 p-1">${t.amount}</td>
+                    <td class="border border-gray-300 p-1">{t.category}</td>
+                    <td class="border border-gray-300 p-1">{t.description}</td>
+                </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div>
 </div>
