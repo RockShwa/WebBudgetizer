@@ -1,30 +1,18 @@
-import { writable } from "svelte/store";
+import sql from "mssql"
+import { config } from "$lib/server/db";
 
-interface Category {
-    text: string;
-    exclude: boolean;
-    id: number;
-    goal: number;
-    defaultGoal: number;
-}
-// our writable thing starts out as an empty array
-export const categories = writable<Category[]>([]);
+await sql.connect(config);
 
-export const addCategory = (text: string) => {
-    // this is going to look kind of weird bc we need to update the array
-    // and then reassign it
-
-    // cur is current array
-    categories.update( (cur) => {
-        // id: Date.now() is an easy way to make a semi-unique id
-        // new Todo is cur + the New Todo
-        const newCategories = [... cur, {text, exclude: false, id: Date.now(), goal: 0, defaultGoal: 0}];
-        return newCategories;
-    })
+export async function addCategory(name: string) {
+    // get category goal & default goal later
+    await sql.query`
+                INSERT INTO Categories (name, goal, defaultGoal)
+                VALUES (${name}, ${0}, ${0})
+            `;
 }
 
-export const deleteCategory = (id: number) => {
-    // uses implicit return (thing in brackets will be returned)
-    // filtering out todo that matches given id (that we're trying to delete)
-    categories.update(todos => todos.filter(todo => todo.id != id));
+export async function deleteCategory(name: string) {
+    await sql.query`
+                DELETE FROM Categories WHERE name=${name}
+            `;    
 }
