@@ -1,7 +1,7 @@
 import sql from "mssql"
 
 // create database configuration
-const config: sql.config = {
+export const config: sql.config = {
     user: "budgetUser",
     password: "budgetUser1229",
     server: "localhost",

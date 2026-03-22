@@ -1,5 +1,6 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
+	import { SvelteSet } from 'svelte/reactivity';
     import { parseCSVFile, initializeElements } from './transactions';
     import { onMount } from 'svelte';
 
@@ -7,6 +8,8 @@
 
     onMount(() => {
         initializeElements();
+        createMonthOptions();
+        createYearOptions();
     });
 
     // registers the onchange event
@@ -124,6 +127,54 @@
 
     let dateObjects: Date[] = transactionData.map(t => new Date(t.timestamp));
 
+    let file: File | undefined;
+
+    async function uploadFile(e: Event) {
+        const input = e.target as HTMLInputElement;
+        file = input.files?.[0];
+
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        location.reload();
+    }
+
+    function createMonthOptions() {
+        const monthSelect = document.getElementById('month-select');
+        const addedMonths = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const month = new Date(t.timestamp).getMonth(); 
+            if (!addedMonths.has(month)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
+                monthSelect?.appendChild(opt);
+                addedMonths.add(month)
+            }
+        }
+    }
+
+    function createYearOptions() {
+        const yearSelect = document.getElementById('year-select');
+        const addedYears = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const year = new Date(t.timestamp).getFullYear(); 
+            if (!addedYears.has(year)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                yearSelect?.appendChild(opt);
+                addedYears.add(year)
+            }
+        }
+    }
+
 </script>
 
 <svelte:head>
@@ -143,71 +194,21 @@
         </select>
     </label>
 
-    <label class="button">Upload
-        <!-- add a thing where it only shows the table if correct month/year is selected -->
+    <input on:change={uploadFile} type="file" id="file" />
+    <!-- <button on:click={uploadFile}>Upload
+        add a thing where it only shows the table if correct month/year is selected -->
         <!-- store table in the database -->
         <!-- in uploads ull need to check for duplicates -->
-        <input on:change={handleFileChange} type="file" id="file" class="hidden" />
-    </label>
+    <!-- </button> --> 
 
 
     <label>Month
-        <select class="select">
-            <option>January</option>
-            <option>Feburary</option>
-            <option>March</option>
-            <option>April</option>
-            <option>May</option>
-            <option>June</option>
-            <option>July</option>
-            <option>August</option>
-            <option>September</option>
-            <option>October</option>
-            <option>November</option>
-            <option>December</option>
-        </select>
+        <select class="select" id="month-select"></select>
     </label>
 
     <!-- generate if u have time with for loop -->
     <label>Year
-        <select class="select">
-            <option>2026</option>
-            <option>2025</option>
-            <option>2024</option>
-            <option>2023</option>
-            <option>2022</option>
-            <option>2021</option>
-            <option>2020</option>
-            <option>2019</option>
-            <option>2018</option>
-            <option>2017</option>
-            <option>2016</option>
-            <option>2015</option>
-            <option>2014</option>
-            <option>2013</option>
-            <option>2012</option>
-            <option>2011</option>
-            <option>2010</option>
-            <option>2009</option>
-            <option>2008</option>
-            <option>2007</option>
-            <option>2006</option>
-            <option>2005</option>
-            <option>2004</option>
-            <option>2003</option>
-            <option>2002</option>
-            <option>2001</option>
-            <option>2000</option>
-            <option>1999</option>
-            <option>1998</option>
-            <option>1997</option>
-            <option>1996</option>
-            <option>1995</option>
-            <option>1994</option>
-            <option>1993</option>
-            <option>1992</option>
-            <option>1991</option>
-            <option>1990</option>
+        <select class="select" id="year-select">
         </select>
     </label>
 
@@ -229,7 +230,7 @@
         <tr>
             <td class="border border-gray-300 p-1">{t.id}</td>
             <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
-            <td class="border border-gray-300 p-1">${t.amount.toFixed(2)}</td>
+            <td class="border border-gray-300 p-1">${t.amount}</td>
             <td class="border border-gray-300 p-1">{t.category}</td>
             <td class="border border-gray-300 p-1">{t.description}</td>
         </tr>
