@@ -23,113 +23,136 @@
         createYearOptions();
     });
 
+    let transactionData = data.transactionData ?? [];
+
+    let categoryData = data.categoryData ?? [];
+
+    let file: File | undefined;
+
     export function navigateBack() {
         history.go(-1);
     }
 
     // get transactionTimes from sql query
-    export function sortTime(transactionTimes: Date[]) {
-        // create the 3 beginning arrays
-        let mid;
-        let left: Date[];
-        let right: Date[];
+    export function sortTime(transactions: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[]) {
+        
+        if (transactions.length <= 1) return transactions;
+    
+        let result=[];
+        let left;
+        let right;
+        
 
-        // as long as the array is greater than 1 unit long
-        if (transactionTimes.length > 1) {
-            // recursively slice the arrays in half
-            mid = transactionTimes.length;
-            left = transactionTimes.slice(0, mid);
-            right = transactionTimes.slice(mid, transactionTimes.length - 1);
+        // recursively slice the arrays in half
+        let mid = Math.floor(transactions.length / 2);
+        left = transactions.slice(0, mid);
+        right = transactions.slice(mid);
 
-            // sort those sliced arrays
-            sortTime(left);
-            sortTime(right);
+        sortTime(left);
+        sortTime(right);
 
-            // create indicies
-            let i: number = 0;
-            let j: number = 0;
-            let k: number = 0;
+        // create indicies
+        let i: number = 0;
+        let j: number = 0;
 
-            // as long as the indicies are less than right and left's length, 
-            // we're going to set the originial array equal to the left if it's
-            // less than the right, and vice versa
+        // as long as the indicies are less than right and left's length, 
+        // we're going to set the originial array equal to the left if it's
+        // less than the right, and vice versa
 
-            while (i < left.length && j < right.length) {
-                if (left[i] < right[j]) {
-                    transactionTimes[k] = left[i];
-                    i++;
-                } else {
-                    transactionTimes[k] = right[j]
-                    j++;
-                } 
-                k++;
-            }
-
-            // merge the remaining left and right arrays
-
-            while (i < left.length) {
-                transactionTimes[k] = left[i];
+        while (i < left.length && j < right.length) {
+            if (new Date(left[i].timestamp) < new Date(right[j].timestamp)) {
+                result.push(left[i]);
                 i++;
-                k++;
-            }
-
-            while (j < right.length) {
-                transactionTimes[k] = right[j];
+            } else {
+                result.push(right[j]);
                 j++;
-                k++;
-            }
+            } 
         }
+
+        // merge the remaining left and right arrays
+
+        while (i < left.length) {
+            result.push(left[i]);
+            i++;
+        }
+
+        while (j < right.length) {
+            result.push(right[j]);
+            j++;
+        }
+
+        return result;
+    }
+    
+
+    function handleTimeSort() {
+        transactionData = sortAmount(transactionData);
     }
 
-    export function sortAmount(transactionAmounts: Date[]) {
-        let mid;
-        let left: Date[];
-        let right: Date[];
+    export function sortAmount(transactions: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[]) {
+        if (transactions.length <= 1) return transactions;
+    
+        let result=[];
+        let left;
+        let right;
+        
 
-        if (transactionAmounts.length > 1) {
-            mid = (transactionAmounts.length / 2.0);
-            left = transactionAmounts.slice(0, mid);
-            right = transactionAmounts.slice(mid);
+        // recursively slice the arrays in half
+        let mid = Math.floor(transactions.length / 2);
+        left = transactions.slice(0, mid);
+        right = transactions.slice(mid);
 
-            sortAmount(left);
-            sortAmount(right);
+        sortAmount(left);
+        sortAmount(right);
 
-            let i: number = 0;
-            let j: number = 0;
-            let k: number = 0;
+        // create indicies
+        let i: number = 0;
+        let j: number = 0;
 
-            while (i < left.length && j < right.length) {
-                if (left[i] < right[j]) {
-                    transactionAmounts[k] = left[i];
-                    i++;
-                } else {
-                    transactionAmounts[k] = right[j]
-                    j++;
-                } 
-                k++;
-            }
+        // as long as the indicies are less than right and left's length, 
+        // we're going to set the originial array equal to the left if it's
+        // less than the right, and vice versa
 
-            while (i < left.length) {
-                transactionAmounts[k] = left[i];
+        while (i < left.length && j < right.length) {
+            if (left[i].amount < right[j].amount) {
+                result.push(left[i]);
                 i++;
-                k++;
-            }
-
-            while (j < right.length) {
-                transactionAmounts[k] = right[j];
+            } else {
+                result.push(right[j]);
                 j++;
-                k++;
-            }
+            } 
         }
+
+        // merge the remaining left and right arrays
+
+        while (i < left.length) {
+            result.push(left[i]);
+            i++;
+        }
+
+        while (j < right.length) {
+            result.push(right[j]);
+            j++;
+        }
+
+        return result;
     }
 
-    let transactionData = data.transactionData ?? [];
-
-    let categoryData = data.categoryData ?? [];
-
-    let dateObjects: Date[] = transactionData.map(t => new Date(t.timestamp));
-
-    let file: File | undefined;
+    function handleAmountSort() {
+        transactionData = sortAmount(transactionData);
+    }
 
     async function uploadFile(e: Event) {
         const input = e.target as HTMLInputElement;
@@ -249,9 +272,14 @@
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
         <label class="bg-blue-600 rounded-sm">Sort
-            <select class="select">
-                <option on:click={() => sortTime(dateObjects)}>Timestamp</option>
-                <option on:click={() => sortAmount(dateObjects)}>Amount</option>
+            <select class="select" on:change={(e) => {
+                const value = (e.target as HTMLSelectElement).value;
+
+                if (value === "Timestamp") handleTimeSort();
+                if (value === "Amount") handleAmountSort();
+            }}>
+                <option value="Timestamp">Timestamp</option>
+                <option value="Amount">Amount</option>
             </select>
         </label>
 
@@ -291,11 +319,6 @@
                     <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
                     <td class="border border-gray-300 p-1">${t.amount}</td>
                     <td class="border border-gray-300 p-1 cursor-context-menu" on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}>{t.category}</td>
-                    <!-- right click on category:
-                     1. show the list of categories (fetched from database)
-                     2. allow user to select one
-                     3. update transaction table category in database
-                     4. update display to reflect that category -->
                     <td class="border border-gray-300 p-1">{t.description}</td>
                 </tr>
                 {/each}
@@ -306,10 +329,10 @@
     </div>
 </div>
 
-<!-- right click menu for setting categories -->
+<!-- right click menu for setting categories (redo styling) -->
 {#if showMenu} 
     <div 
-        class="fixed z-[100] bg-white shadow-2xl border border-gray-300 rounded-lg py-2 w-48 flex flex-col"
+        class="fixed z-100 bg-white shadow-2xl border border-gray-300 rounded-lg py-2 w-48 flex flex-col"
         style="top: {pos.y}px; left: {pos.x}px;"
     >
         <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase border-b mb-1">
