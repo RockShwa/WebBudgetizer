@@ -4,8 +4,12 @@ export async function load() {
     const transactionData = await queryDatabase(
         `SELECT id, timestamp, amount, category, description FROM Transactions`
     );
+    const categoryData = await queryDatabase(`
+        SELECT name, goal, defaultGoal FROM Categories
+    `);
 
     return {
-        transactionData
+        transactionData,
+        categoryData
     };
 }

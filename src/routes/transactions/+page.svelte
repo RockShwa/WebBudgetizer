@@ -3,7 +3,20 @@
 	import { SvelteSet } from 'svelte/reactivity';
     import { onMount } from 'svelte';
 
-    export let data: { transactionData: { id: number; timestamp: string; amount: number; category: string; description: string; }[]};
+    export let data: { 
+        transactionData: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[];
+        categoryData: {
+            name: string; 
+            goal: number; 
+            defaultGoal: number; 
+        }[];
+    };
 
     onMount(() => {
         createMonthOptions();
@@ -112,6 +125,8 @@
 
     let transactionData = data.transactionData ?? [];
 
+    let categoryData = data.categoryData ?? [];
+
     let dateObjects: Date[] = transactionData.map(t => new Date(t.timestamp));
 
     let file: File | undefined;
@@ -162,7 +177,64 @@
         }
     }
 
+    let showMenu = false;
+    let pos = { x: 0, y: 0 };
+    let selectedTransaction: | { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        } | null = null;
+
+    function handleRightClick(e: MouseEvent, transaction: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }) {
+
+        selectedTransaction = transaction;
+
+        pos = {x: e.clientX, y: e.clientY};
+        showMenu = true;
+    }
+
+    function closeMenu() {
+        showMenu = false;
+    }
+
+    async function updateTransactionCategory(transaction: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }, categoryName: string) {
+
+        await fetch ('/api/transactions', {
+            method: 'PATCH', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                id: transaction.id, 
+                category: categoryName
+            })
+        })
+
+        transactionData = transactionData?.map(t => {
+            if (t.id === transaction.id) {
+                return { ...t, category: categoryName}
+            }
+            return t;
+        }) 
+
+        closeMenu();
+    }
+
 </script>
+
+<svelte:window on:click={closeMenu} />
 
 <svelte:head>
     <title>Transactions</title>
@@ -218,11 +290,44 @@
                     <td class="border border-gray-300 p-1">{t.id}</td>
                     <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
                     <td class="border border-gray-300 p-1">${t.amount}</td>
-                    <td class="border border-gray-300 p-1">{t.category}</td>
+                    <td class="border border-gray-300 p-1 cursor-context-menu" on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}>{t.category}</td>
+                    <!-- right click on category:
+                     1. show the list of categories (fetched from database)
+                     2. allow user to select one
+                     3. update transaction table category in database
+                     4. update display to reflect that category -->
                     <td class="border border-gray-300 p-1">{t.description}</td>
                 </tr>
                 {/each}
             </tbody>
         </table>
+
+
     </div>
 </div>
+
+<!-- right click menu for setting categories -->
+{#if showMenu} 
+    <div 
+        class="fixed z-[100] bg-white shadow-2xl border border-gray-300 rounded-lg py-2 w-48 flex flex-col"
+        style="top: {pos.y}px; left: {pos.x}px;"
+    >
+        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase border-b mb-1">
+            Set Category
+        </div>
+
+        <div class="max-h-60 overflow-y-auto"> 
+                {#each categoryData as c (c.name)} 
+                    <button 
+                        type="button"
+                        class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+                        on:click|stopPropagation={() => { if (selectedTransaction) {
+                                                            updateTransactionCategory(selectedTransaction, c.name);
+                                                        }}}
+                    >
+                        {c.name}
+                    </button>
+                {/each}
+        </div>
+    </div>
+{/if}

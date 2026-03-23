@@ -5,7 +5,7 @@ import sql from "mssql"
 
 await sql.connect(config);
 
-type TransactionRow = {
+export type TransactionRow = {
     Date: string;
     Amount: string; // CSV parser returns strings by default
     Category: string;
