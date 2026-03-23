@@ -1,5 +1,4 @@
 <script lang="ts">
-    import Category from "../../components/Category.svelte";
     import { resolve } from '$app/paths';
 
     export let data: { categoryData: { name: string; goal: number; defaultGoal: number; }[]};
@@ -43,9 +42,9 @@
     </div>
 
     <!-- Add Category -->
-    <form class="my-6 mx-3" on:submit|preventDefault={handleAddCategory}>
-        <label class="font-bold text-gray-800 m-3" for="todo">Add Category</label>
-        <div class="flex flex-row text-sm mb-2">
+    <form class="my-6 bg-white" on:submit|preventDefault={handleAddCategory}>
+        <label class="font-bold text-gray-800 m-3 bg-white" for="todo">Add Category</label>
+        <div class="flex flex-row text-sm mb-2 bg-white">
             <!-- bind todo value inside input (to store the variable there)-->
             <input type="text" bind:value={categoryName} name="category" placeholder="Enter Category Here"
             class="appearance-none shadow-sm border border-gray-200 p-2 focus:outline-non focus:border-gray-500
@@ -55,22 +54,44 @@
     </form>
 
     <!-- Category List -->
-    {#each categoryData as c (c.name)}
-        <Category text={c.name} goal={c.goal} defaultGoal={c.defaultGoal}></Category>
 
-        <li class="bg-white flex items-center shadow-sm border-gray-200 rounded-lg my-2 py-2 px-4">
-        <input
-            type="checkbox"
-            class="mr-2 form-checkbox h-5 w-5"/>
-            <!-- we use brackets after the class bc we're going to be using some variables-->
-            <!-- display things in addition to text here -->
-            <span class="flex-1 text-gray-800">Category: {c.name} Goal: {c.goal} Default Goal: {c.defaultGoal}</span>
-            <button
-                type='button'
-                class='text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline'
-                on:click={() => handleDeleteCategory(c)}>Delete</button>
-        
-        </li>
-    {/each}
+    <div class="flex m-3">
+        <table class="border-collapse border border-gray-300">
+            <thead>
+                <tr class="bg-gray-300">
+                    <th class="border border-gray-300 p-1">Category Name</th>
+                    <th class="border border-gray-300 p-1">Goal</th>
+                    <th class="border border-gray-300 p-1">Default Goal</th>
+                    <th class="border border-gray-300 p-1">Delete?</th>
+                </tr>
+            </thead>
+            <tbody>
+                {#each categoryData as c (c.name)}
+                <tr>
+                    <td class="border border-gray-300 p-1">{c.name}</td>
+                    <td class="border border-gray-300 p-1">{c.goal}</td>
+                    <td class="border border-gray-300 p-1">{c.defaultGoal}</td>
+                    <td class="border border-gray-300 p-1"><button
+                            type='button'
+                            class='text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline'
+                            on:click={() => handleDeleteCategory(c)}>Delete
+                    </button></td>
+                </tr>
+                {/each}
+            </tbody>
+        </table>
+    </div> 
 
 </main>
+
+<style>
+    :global(body) {
+        background-color: rgb(143, 201, 163)
+    }
+    tr:nth-child(even) {
+        background-color: white;
+    }
+    tr:nth-child(odd) {
+        background-color: var(--color-gray-300);
+    }
+</style>

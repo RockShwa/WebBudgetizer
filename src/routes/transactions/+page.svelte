@@ -264,14 +264,14 @@
 </svelte:head>
 
 
-<div class="flex my-2 flex-col">
+<div class="flex flex-col" style="background-color:rgb(143, 201, 163);">
     <!-- menu div -->
-    <div class="flex">
-        <a href={resolve("/manageCategories")} class="bg-blue-600 rounded-sm">Manage Categories</a>
-        <a href={resolve("/manageGoals")} class="bg-blue-600 rounded-sm">Manage Goals</a>   
+    <div class="flex m-2">
+        <a href={resolve("/manageCategories")} class="font-bold bg-white rounded-sm m-0.5 p-1">Manage Categories</a>
+        <a href={resolve("/manageGoals")} class="font-bold bg-white rounded-sm m-0.5 p-1">Manage Goals</a>   
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
-        <label class="bg-blue-600 rounded-sm">Sort
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Sort
             <select class="select" on:change={(e) => {
                 const value = (e.target as HTMLSelectElement).value;
 
@@ -283,28 +283,28 @@
             </select>
         </label>
 
-        <label class="bg-blue-600 rounded-sm"> Upload
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1"> Upload
             <input on:change={uploadFile} type="file" id="file" class="hidden"/>
         </label>
 
-        <label class="bg-blue-600 rounded-sm">Month
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
             <select class="select" id="month-select"></select>
         </label>
 
-        <label class="bg-blue-600 rounded-sm">Year
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
             <select class="select" id="year-select">
             </select>
         </label>
 
 
-        <a href={resolve("/")} class="bg-blue-600 rounded-sm">Back</a>  
+        <a href={resolve("/")} class="font-bold bg-white rounded-sm m-0.5 p-1">Back</a>  
     </div> 
 
     <!-- table div -->
-    <div class="flex">
+    <div class="flex m-3">
         <table class="border-collapse border border-gray-300">
             <thead>
-                <tr>
+                <tr class="bg-gray-300">
                     <th class="border border-gray-300 p-1">ID</th>
                     <th class="border border-gray-300 p-1">Timestamp</th>
                     <th class="border border-gray-300 p-1">Amount</th>
@@ -354,3 +354,12 @@
         </div>
     </div>
 {/if}
+
+<style>
+    tr:nth-child(even) {
+        background-color: white;
+    }
+    tr:nth-child(odd) {
+        background-color: var(--color-gray-300);
+    }
+</style>
