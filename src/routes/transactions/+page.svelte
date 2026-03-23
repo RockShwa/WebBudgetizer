@@ -236,6 +236,8 @@
             description: string; 
         }, categoryName: string) {
 
+        // when we change a transaction's category, it's amount needs to be added to the category table
+
         await fetch ('/api/transactions', {
             method: 'PATCH', 
             headers: { 'Content-Type': 'application/json' },
@@ -253,7 +255,21 @@
         }) 
 
         closeMenu();
+
+        addAmountToCategory(transaction, categoryName)
     }
+
+    function addAmountToCategory(transaction: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }, categoryName: string) {
+
+            // update category so PATCH
+            // WHEN U CALL PATCH U MUST ADD THE ACTION
+        }
 
 </script>
 
@@ -268,7 +284,6 @@
     <!-- menu div -->
     <div class="flex m-2">
         <a href={resolve("/manageCategories")} class="font-bold bg-white rounded-sm m-0.5 p-1">Manage Categories</a>
-        <a href={resolve("/manageGoals")} class="font-bold bg-white rounded-sm m-0.5 p-1">Manage Goals</a>   
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
         <label class="font-bold bg-white rounded-sm m-0.5 p-1">Sort
@@ -340,6 +355,12 @@
         </div>
 
         <div class="max-h-60 overflow-y-auto"> 
+                <button type="button" class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+                on:click|stopPropagation={() => { if (selectedTransaction) {
+                                                            updateTransactionCategory(selectedTransaction, "");
+                                                        }}}>
+                    Uncategorized
+                </button>
                 {#each categoryData as c (c.name)} 
                     <button 
                         type="button"

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
 
-    export let data: { categoryData: { name: string; goal: number; defaultGoal: number; }[]};
+    export let data: { categoryData: { name: string; goal: number; defaultGoal: number; categoryTotal: number}[]};
     let categoryData = data.categoryData ?? [];
     let categoryName = '';
 
@@ -9,10 +9,10 @@
         await fetch('/api/categories', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: categoryName, goal: 0, defaultGoal: 0 })
+            body: JSON.stringify({ name: categoryName, goal: 0, defaultGoal: 0, categoryTotal: 0})
         });
 
-        const newCategory = { name: categoryName, goal: 0, defaultGoal: 0 };
+        const newCategory = { name: categoryName, goal: 0, defaultGoal: 0, categoryTotal: 0};
         categoryData = [...categoryData, newCategory]; // update website
         categoryName = ''; // reset input
     }
@@ -26,6 +26,37 @@
 
         categoryData = categoryData.filter(t => t.name !== c.name); // remove from UI
     }
+
+    async function handleEditedGoal(action: string, c: { name: string}, event: Event) {
+        const element = event.target as HTMLElement;
+        const newGoal = element.innerText;
+
+        if (action === 'UPDATE_GOAL') {
+            // query database with input
+            await fetch('/api/categories', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'UPDATE_GOAL',
+                    name: c.name,
+                    goal: newGoal
+                })
+            });
+        } else if (action === 'UPDATE_DEFAULT_GOAL') {
+            // query database with input
+            await fetch('/api/categories', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'UPDATE_DEFAULT_GOAL',
+                    name: c.name,
+                    goal: newGoal
+                })
+            });
+        }
+    }
+
+
 
 </script>
 
@@ -62,15 +93,30 @@
                     <th class="border border-gray-300 p-1">Category Name</th>
                     <th class="border border-gray-300 p-1">Goal</th>
                     <th class="border border-gray-300 p-1">Default Goal</th>
+                    <th class="border border-gray-300 p-1">Category Total</th>
                     <th class="border border-gray-300 p-1">Delete?</th>
                 </tr>
             </thead>
             <tbody>
                 {#each categoryData as c (c.name)}
                 <tr>
-                    <td class="border border-gray-300 p-1">{c.name}</td>
-                    <td class="border border-gray-300 p-1">{c.goal}</td>
-                    <td class="border border-gray-300 p-1">{c.defaultGoal}</td>
+                    <td class="border border-gray-300 p-1">
+                        {c.name}
+                    </td>
+                    <td class="border border-gray-300 p-1">
+                    <!-- on change, add goal to database -->
+                        <div contenteditable="true" id="editor" on:blur={(e) => handleEditedGoal('UPDATE_GOAL', c, e)}>
+                            {c.goal}
+                        </div>
+                    </td>
+                    <td class="border border-gray-300 p-1">
+                        <div contenteditable="true" id="editor" on:blur={(e) => handleEditedGoal('UPDATE_DEFAULT_GOAL', c, e)}>
+                            {c.defaultGoal}
+                        </div>
+                    </td>
+                    <td class="border border-gray-300 p-1">
+                        {c.categoryTotal}
+                    </td>
                     <td class="border border-gray-300 p-1"><button
                             type='button'
                             class='text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline'
