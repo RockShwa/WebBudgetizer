@@ -236,14 +236,14 @@
             description: string; 
         }, categoryName: string) {
 
-        // when we change a transaction's category, it's amount needs to be added to the category table
-
         await fetch ('/api/transactions', {
             method: 'PATCH', 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
+                action: 'UPDATE_CATEGORY_NAME',
                 id: transaction.id, 
-                category: categoryName
+                category: categoryName,
+                amount: transaction.amount
             })
         })
 
@@ -259,7 +259,7 @@
         addAmountToCategory(transaction, categoryName)
     }
 
-    function addAmountToCategory(transaction: { 
+    async function addAmountToCategory(transaction: { 
             id: number; 
             timestamp: string; 
             amount: number; 
@@ -267,8 +267,20 @@
             description: string; 
         }, categoryName: string) {
 
-            // update category so PATCH
-            // WHEN U CALL PATCH U MUST ADD THE ACTION
+            const response = await fetch(`/api/transactions?name=${categoryName}`);
+            const catTotal: number = await response.json();
+            const newTotal = Number(catTotal) + Number(transaction.amount);
+
+            await fetch ('/api/transactions', {
+                method: 'PATCH', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'UPDATE_CATEGORY_AMOUNT',
+                    id: transaction.id, 
+                    category: categoryName,
+                    amount: newTotal
+                })
+            })
         }
 
 </script>

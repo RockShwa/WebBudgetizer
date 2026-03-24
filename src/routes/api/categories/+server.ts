@@ -41,3 +41,17 @@ export async function PATCH({ request }) {
 
     return json({ success: true });
 }
+
+export async function GET({ url }) {
+    const name = url.searchParams.get('name');
+
+    await sql.connect(config);
+
+    const result = await sql.query`
+        SELECT categoryTotal 
+        FROM Categories 
+        WHERE name = ${name}`;
+
+    const total = result.recordset[0]?.categoryTotal ?? 0;
+    return json(total);
+}

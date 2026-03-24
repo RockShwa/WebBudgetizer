@@ -54,9 +54,19 @@
                 })
             });
         }
+        location.reload();
     }
 
+    async function calculateDifference(category: { name: string; goal: number; defaultGoal: number; categoryTotal: number}) {
+        const response = await fetch(`/api/categories?name=${category.name}`);
+        const categoryTotal: number = await response.json();
 
+        if (category.goal === 0 && category.defaultGoal === 0) {
+            return category.categoryTotal;
+        } else {
+            return Number(category.goal) - Number(categoryTotal);
+        }
+    }
 
 </script>
 
@@ -94,6 +104,7 @@
                     <th class="border border-gray-300 p-1">Goal</th>
                     <th class="border border-gray-300 p-1">Default Goal</th>
                     <th class="border border-gray-300 p-1">Category Total</th>
+                    <th class="border border-gray-300 p-1">Difference</th>
                     <th class="border border-gray-300 p-1">Delete?</th>
                 </tr>
             </thead>
@@ -116,6 +127,13 @@
                     </td>
                     <td class="border border-gray-300 p-1">
                         {c.categoryTotal}
+                    </td>
+                    <td class="border border-gray-300 p-1">
+                        {#await calculateDifference(c)}
+                            <span></span>
+                        {:then diff}
+                            <span>{diff}</span>
+                        {/await}
                     </td>
                     <td class="border border-gray-300 p-1"><button
                             type='button'
