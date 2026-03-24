@@ -1,54 +1,77 @@
 <script lang="ts">
     import * as regression from 'regression';
-    // import { onMount } from "svelte";
-    // import Chart from "chart.js/auto";
-    //import { queryDatabase } from '$lib/server/db';
+    import Chart from "chart.js/auto";
 
-    const data: regression.DataPoint[] = [[0, 1], [2,3]];
+    export let data;
+    let categoryData = data.categoryData ?? [];
+
+    let selectedCategory = "";
     let canvas: HTMLCanvasElement;
+    let chartInstance: Chart;
 
-    export function calculateRegression() {
-        const result = regression.linear(data);
-        // [0] is slope, [1] is y-int
-        return result;
+    export async function graphRegression(categoryName: string) {
+        const response = await fetch(`/api/monthlySummaries?name=${categoryName}`);
+        const transactions = await response.json();
+
+        if (!transactions || transactions.length === 0) {
+            console.warn("No data found in database for this category.");
+            if (chartInstance) chartInstance.destroy();
+            return;
+        }
+
+        const formattedData = transactions.map((t: { timestamp: string, amount: number}) => {
+            const dateObj = new Date(t.timestamp);
+            return {
+                x: dateObj.getMonth(),
+                y: t.amount
+            }
+        });
+
+        const regInput = formattedData.map((d: { x: number, y: number})  => [d.x, d.y]);
+
+        const reg = regression.linear(regInput);
+
+        // create the best fit data (two relevant points) -> start and end
+        const startX = regInput[0][0];
+        const endX = regInput[regInput.length - 1][0];
+
+        const bestFit = [
+            // x is time, y is amount
+            {x: startX, y: reg.equation[1]},
+            {x: endX, y: reg.equation[0] * endX + reg.equation[1]}
+        ];
+
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(canvas, {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    {
+                        label: "Category Transactions",
+                        data: transactions.map((t: { timestamp: string, amount: number}) => ({
+                            x: new Date(t.timestamp).getMonth(),
+                            y: t.amount
+                        })),
+                        backgroundColor: 'blue'
+                    },
+                    {
+                        label: "Line of Best Fit",
+                        data: bestFit,
+                        type: "line",
+                        borderColor: "red"
+                    }
+                ]
+            }
+        });
     }
 
-    // export async function graphRegression() {
-    //     // query database for the array of timestamps for each transaction
-    //     const timestamp: number[] = await queryDatabase("SELECT timestamp FROM Transactions");
-
-    //     // create the best fit data (two relevant points)
-    //     const bestFit: regression.DataPoint[] = [
-    //         // x is time, y is amount
-    //         [timestamp[0], calculateRegression().equation[1] ],
-    //         [timestamp[1], calculateRegression().equation[0] * timestamp[1] + calculateRegression().equation[1] ]
-    //     ];
-
-    //     // onMount is what is used to ensure that the Chart is created before it tries to do anything with it
-    //     onMount(() => {
-    //         new Chart(canvas, {
-    //             // chart is a scatter plot
-    //             type: 'scatter',
-    //             data: {
-    //                 datasets: [
-    //                     {
-    //                         // first data set will be the scatter plot
-    //                         label: "Category Tracking",
-    //                         data: data,
-    //                         backgroundColor: "blue"
-    //                     },
-    //                     {
-    //                         // second data set is the line of best fit
-    //                         label: "Line of Best Fit",
-    //                         data: bestFit,
-    //                         type: "line",
-    //                         borderColor: "red"
-    //                     }
-    //                 ]
-    //             }
-    //         });
-    //     });    
-    // }
+    async function handleCategorySelection() {
+        if (selectedCategory) {
+            await graphRegression(selectedCategory);
+        }   
+        
+    }
 
     export function caluclateSavingPrediction(a: number, income: number, m: number) {
 
@@ -79,18 +102,18 @@
     </div>
 
     <div class="flex flex-row items-center">
-
-        <label for="month" class="rounded-l bg-blue-500 h-7 ml-2">Month</label>
-        <select id="month" class="rounded-r bg-blue-500 h-7 mr-2"></select>
-
-        <label for="year" class="rounded-l bg-blue-500 h-7 ml-2">Year</label>
-        <select id="year" class=" rounded-r bg-blue-500 h-7 mr-2"></select>
+        <label for="month" class="rounded-l bg-blue-500 h-7 ml-2">Category</label>
+        <select bind:value={selectedCategory} on:change={handleCategorySelection} class="rounded-r bg-blue-500 h-7 mr-2">
+            {#each categoryData as c (c.name)}
+                <option>{c.name}</option>
+            {/each}
+        </select>
     </div>
 
     <!-- Will implement Chart with TS later -->
     <canvas bind:this={canvas}></canvas>
 
     <!-- Will implement Chart with TS later -->
-    <canvas id="piChart" style="width:100%;max-width:700px"></canvas>
+    <!-- <canvas id="piChart" style="width:100%;max-width:700px"></canvas> -->
 </div>
 

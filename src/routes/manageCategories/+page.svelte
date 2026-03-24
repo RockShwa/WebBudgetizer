@@ -13,8 +13,8 @@
         });
 
         const newCategory = { name: categoryName, goal: 0, defaultGoal: 0, categoryTotal: 0};
-        categoryData = [...categoryData, newCategory]; // update website
-        categoryName = ''; // reset input
+        categoryData = [...categoryData, newCategory]; 
+        categoryName = ''; 
     }
 
     async function handleDeleteCategory(c: { name: string }) {
@@ -24,7 +24,7 @@
             body: JSON.stringify({ name: c.name })
         });
 
-        categoryData = categoryData.filter(t => t.name !== c.name); // remove from UI
+        categoryData = categoryData.filter(t => t.name !== c.name); 
     }
 
     async function handleEditedGoal(action: string, c: { name: string}, event: Event) {
