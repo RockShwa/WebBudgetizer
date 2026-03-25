@@ -1,25 +1,53 @@
 <script lang="ts">
     import * as regression from 'regression';
     import Chart from "chart.js/auto";
+	import { SvelteSet } from 'svelte/reactivity';
+	import { onMount } from 'svelte';
 
-    export let data;
+    onMount(() => {
+        createYearOptions();
+        createMonthOptions();
+    });
+
+    export let data: { 
+        transactionData: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[];
+        categoryData: {
+            name: string; 
+            goal: number; 
+            defaultGoal: number; 
+            categoryTotal: number;
+        }[];
+    };
     let categoryData = data.categoryData ?? [];
+    let transactionData = data.transactionData ?? [];
 
     let selectedCategory = "";
+    let selectedYear = "";
+    let selectedMonth = "";
     let canvas: HTMLCanvasElement;
     let chartInstance: Chart;
 
-    export async function graphRegression(categoryName: string) {
+    export async function graphRegression(categoryName: string, startYear: string, endYear: string) {
         const response = await fetch(`/api/monthlySummaries?name=${categoryName}`);
         const transactions = await response.json();
 
         if (!transactions || transactions.length === 0) {
-            console.warn("No data found in database for this category.");
             if (chartInstance) chartInstance.destroy();
             return;
         }
 
-        const formattedData = transactions.map((t: { timestamp: string, amount: number}) => {
+        const filteredTransactions = transactions.filter((t: { timestamp: string, amount: number}) => {
+            const year = new Date(t.timestamp).getFullYear();
+            return year >= parseFloat(startYear) && year <= parseFloat(endYear);
+        })
+
+        const formattedData = filteredTransactions.map((t: { timestamp: string, amount: number}) => {
             const dateObj = new Date(t.timestamp);
             return {
                 x: dateObj.getMonth(),
@@ -68,7 +96,7 @@
 
     async function handleCategorySelection() {
         if (selectedCategory) {
-            await graphRegression(selectedCategory);
+            await graphRegression(selectedCategory, selectedYear, selectedYear);
         }   
         
     }
@@ -78,14 +106,105 @@
         // m is slope of the line of best fit with data of change in income over change in savings
         // income is disposable income
         // a is the amount you would save with no income
-
-        const A = a;
-        const d_y = income;
-        const mps = m;
-
         // the linear equation - returns the amount saved at a particular amount of disposable income
-        return A + mps * d_y;
+        return a + m * income;
     }
+
+    let pieCanvas: HTMLCanvasElement;
+    let pieChartInstance: Chart;
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    async function renderPieChart() {
+
+        // filter transactions for month chosen
+        // sum according to categories
+
+
+        if (pieChartInstance) pieChartInstance.destroy();
+
+        const chartPoints = categoryData.map(c => {
+            const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+                const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
+                const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
+                return isCorrectCateogry && isCorrectMonth;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+
+            return {
+                name: c.name,
+                amount: categorySum
+            };
+            }).filter(c => c.amount);
+
+        const total = chartPoints.reduce((sum, c) => sum + c.amount, 0); 
+
+        if (total === 0) return;
+
+        pieChartInstance = new Chart(pieCanvas, {
+            type: 'pie',
+            data: {
+                labels: chartPoints.map(c => c.name),
+                datasets: [{
+                    data: chartPoints.map(c => c.amount),
+                    backgroundColor: [
+                        '#3b82f6',
+                        '#ef4444',
+                        '#10b981',
+                        '#f59e0b',
+                        '#8b5cf6',
+                        '#ec4899'
+                    ]
+                }]
+            }
+        })
+    }
+
+    $: if (pieCanvas && categoryData.length > 0 && selectedMonth) {
+        renderPieChart();
+    }
+
+    function createYearOptions() {
+        const yearSelect = document.getElementById('year-select');
+        const addedYears = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const year = new Date(t.timestamp).getFullYear(); 
+            if (!addedYears.has(year)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                selectedYear = opt.textContent;
+                yearSelect?.appendChild(opt);
+                addedYears.add(year)
+            }
+        }
+    }
+
+    function createMonthOptions() {
+        const monthSelect = document.getElementById('month-select');
+        const addedMonths = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const month = new Date(t.timestamp).getMonth(); 
+            if (!addedMonths.has(month)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
+                selectedMonth = opt.textContent;
+                monthSelect?.appendChild(opt);
+                addedMonths.add(month)
+            }
+        }
+    }
+
+    // need starting
+    // need total for all
+    // need slope
+
+    //$: prediciton = caluclateSavingPrediction();
+
 </script>
 
 <svelte:head>
@@ -108,12 +227,28 @@
                 <option>{c.name}</option>
             {/each}
         </select>
+
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+            <select class="select" id="year-select">
+            </select>
+        </label>
     </div>
 
-    <!-- Will implement Chart with TS later -->
-    <canvas bind:this={canvas}></canvas>
+    <div class="flex flex-col">
+        <canvas bind:this={canvas}></canvas>
 
-    <!-- Will implement Chart with TS later -->
-    <!-- <canvas id="piChart" style="width:100%;max-width:700px"></canvas> -->
+        <div id="pi-chart-container" class="w-full h-64 mx-auto flex flex-row">
+            <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
+                <select class="select" id="month-select" bind:value={selectedMonth}>
+                </select>
+            </label>
+            <canvas bind:this={pieCanvas}></canvas>
+
+            <!-- <div>
+                here will be predicted savings
+                Predicted Savings: ${prediction};
+            </div> -->
+        </div>
+    </div>
 </div>
 
