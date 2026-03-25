@@ -36,7 +36,6 @@
         history.go(-1);
     }
 
-    // get transactionTimes from sql query
     export function sortTime(transactions: { 
             id: number; 
             timestamp: string; 
@@ -47,18 +46,23 @@
         
         if (transactions.length <= 1) return transactions;
     
-        let result=[];
+        let result: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[]=[];
+
         let left;
         let right;
         
 
         // recursively slice the arrays in half
         let mid = Math.floor(transactions.length / 2);
-        left = transactions.slice(0, mid);
-        right = transactions.slice(mid);
 
-        sortTime(left);
-        sortTime(right);
+        left = sortTime(transactions.slice(0, mid));
+        right = sortTime(transactions.slice(mid));
 
         // create indicies
         let i: number = 0;
@@ -95,7 +99,7 @@
     
 
     function handleTimeSort() {
-        transactionData = sortAmount(transactionData);
+        transactionData = sortTime(transactionData);
     }
 
     export function sortAmount(transactions: { 
@@ -107,18 +111,22 @@
         }[]) {
         if (transactions.length <= 1) return transactions;
     
-        let result=[];
+        let result: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[]=[];
         let left;
         let right;
         
 
         // recursively slice the arrays in half
         let mid = Math.floor(transactions.length / 2);
-        left = transactions.slice(0, mid);
-        right = transactions.slice(mid);
 
-        sortAmount(left);
-        sortAmount(right);
+        left = sortAmount(transactions.slice(0, mid));
+        right = sortAmount(transactions.slice(mid));
 
         // create indicies
         let i: number = 0;
@@ -261,8 +269,32 @@
 
         closeMenu();
 
-        addAmountToCategory(transaction, categoryName)
+        addAmountToCategory(transaction, categoryName);
     }
+
+    function getSuggestedCategory(description: string) {
+            const desc = description.toLowerCase();
+            const scores: Record<string, number> = {};
+
+            transactionData.forEach(t => {
+                const historyDesc = t.description.toLowerCase();
+
+                // if historical description is inside the new one or vice versa,
+                // increase the score for that category
+
+                if (desc.includes(historyDesc) || historyDesc.includes(desc)) {
+                    scores[t.category] = scores[t.category] + 1;
+                }
+            });
+
+            // find category with highest score
+            const highest = Object.entries(scores).reduce((max, current) => {
+                return current[1] > max[1] ? current: max});
+
+            const bestCategory = highest[0];
+
+            return bestCategory;
+        }
 
     async function addAmountToCategory(transaction: { 
             id: number; 
@@ -375,35 +407,46 @@
 
 <!-- right click menu for setting categories (redo styling) -->
 {#if showMenu} 
+    {@const suggested = selectedTransaction ? getSuggestedCategory(selectedTransaction.description) : null}
+
     <div 
         class="fixed z-100 bg-white shadow-2xl border border-gray-300 rounded-lg py-2 w-48 flex flex-col"
-        style="top: {pos.y}px; left: {pos.x}px;"
-    >
-        <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase border-b mb-1">
-            Set Category
-        </div>
+        style="top: {pos.y}px; left: {pos.x}px;">
+
+        {#if suggested}
+            <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase border-b mb-1">
+                Suggested
+            </div>
+            <button class="w-full text-left px-4 py-2" on:click|stopPropagation={() => {
+                if (selectedTransaction) updateTransactionCategory(selectedTransaction, suggested) 
+            }}>
+                {suggested}
+            </button>
+        {/if}
 
         <div class="max-h-60 overflow-y-auto"> 
-                <button type="button" class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
-                on:click|stopPropagation={() => { if (selectedTransaction) {
-                                                            updateTransactionCategory(selectedTransaction, "");
-                                                        }}}>
-                    Uncategorized
+            {#each categoryData.filter(c => c.name !== suggested) as c (c.name)} 
+                <button 
+                    type="button"
+                    class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+                    on:click|stopPropagation={() => { if (selectedTransaction) {
+                                                        updateTransactionCategory(selectedTransaction, c.name);
+                                                    }}}
+                >
+                    {c.name}
                 </button>
-                {#each categoryData as c (c.name)} 
-                    <button 
-                        type="button"
-                        class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
-                        on:click|stopPropagation={() => { if (selectedTransaction) {
-                                                            updateTransactionCategory(selectedTransaction, c.name);
-                                                        }}}
-                    >
-                        {c.name}
-                    </button>
-                {/each}
-        </div>
+            {/each}
+        </div>    
+               
+        
+        <button type="button" class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+        on:click|stopPropagation={() => { if (selectedTransaction) {
+                                                    updateTransactionCategory(selectedTransaction, "");
+                                                }}}>
+            Uncategorized
+        </button>
     </div>
-{/if}
+{/if}    
 
 <style>
     tr:nth-child(even) {
