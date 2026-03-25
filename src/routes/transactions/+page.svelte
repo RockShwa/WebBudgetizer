@@ -29,6 +29,9 @@
 
     let file: File | undefined;
 
+    let selectedMonth = "";
+    let selectedYear = "";
+
     export function navigateBack() {
         history.go(-1);
     }
@@ -179,6 +182,7 @@
             if (!addedMonths.has(month)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
+                selectedMonth = opt.textContent;
                 monthSelect?.appendChild(opt);
                 addedMonths.add(month)
             }
@@ -194,6 +198,7 @@
             if (!addedYears.has(year)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                selectedYear = opt.textContent;
                 yearSelect?.appendChild(opt);
                 addedYears.add(year)
             }
@@ -282,6 +287,18 @@
                 })
             })
         }
+        
+
+        const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+        $: filteredTransactions = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+                const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
+                const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
+                return isCorrectYear && isCorrectMonth;
+        });        
 
 </script>
 
@@ -315,11 +332,11 @@
         </label>
 
         <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
-            <select class="select" id="month-select"></select>
+            <select class="select" id="month-select" bind:value={selectedMonth}></select>
         </label>
 
         <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
-            <select class="select" id="year-select">
+            <select class="select" id="year-select" bind:value={selectedYear}>
             </select>
         </label>
 
@@ -340,7 +357,7 @@
                 </tr>
             </thead>
             <tbody>
-                {#each transactionData as t (t.id)}
+                {#each filteredTransactions as t (t.id)}
                 <tr>
                     <td class="border border-gray-300 p-1">{t.id}</td>
                     <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
