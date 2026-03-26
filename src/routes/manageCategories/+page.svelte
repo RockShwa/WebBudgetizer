@@ -1,9 +1,32 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
-    export let data: { categoryData: { name: string; goal: number; defaultGoal: number; categoryTotal: number}[]};
+    export let data: { 
+        transactionData: { 
+            id: number; 
+            timestamp: string; 
+            amount: number; 
+            category: string; 
+            description: string; 
+        }[];
+        categoryData: {
+            name: string; 
+            goal: number; 
+            defaultGoal: number; 
+            categoryTotal: number;
+        }[];
+    };
+
     let categoryData = data.categoryData ?? [];
+    let transactionData = data.transactionData ?? [];
     let categoryName = '';
+
+    onMount(() => {
+        createYearOptions();
+        createMonthOptions();
+    });
 
     async function handleAddCategory() {
         await fetch('/api/categories', {
@@ -68,6 +91,62 @@
         }
     }
 
+    let selectedMonth = "";
+    let selectedYear = "";
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    function createYearOptions() {
+        const yearSelect = document.getElementById('year-select');
+        const addedYears = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const year = new Date(t.timestamp).getFullYear(); 
+            if (!addedYears.has(year)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                selectedYear = opt.textContent;
+                yearSelect?.appendChild(opt);
+                addedYears.add(year)
+            }
+        }
+    }
+
+    function createMonthOptions() {
+        const monthSelect = document.getElementById('month-select');
+        const addedMonths = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const month = new Date(t.timestamp).getMonth(); 
+            if (!addedMonths.has(month)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
+                selectedMonth = opt.textContent;
+                monthSelect?.appendChild(opt);
+                addedMonths.add(month)
+            }
+        }
+    }
+
+    function calculateCategorySum(c: {name: string}, month: string, year: string) {
+        const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+                const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(month);
+                const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(year);
+                const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
+                return isCorrectCateogry && isCorrectMonth && isCorrectYear;
+            })
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        return categorySum;    
+    }
+
+    $: categoryTotals = categoryData.map(c => ({
+        name: c.name,
+        total: calculateCategorySum(c, selectedMonth, selectedYear)
+    }));
 </script>
 
 <svelte:head>
@@ -92,6 +171,16 @@
             rounded-lg"/>
             <button type="submit" class="w-auto shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 m-2">Add</button>
         </div>
+
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
+                <select class="select" id="month-select" bind:value={selectedMonth}>
+                </select>
+        </label>
+
+        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+            <select class="select" id="year-select" bind:value={selectedYear}>
+            </select>
+        </label>
     </form>
 
     <!-- Category List -->
@@ -126,7 +215,7 @@
                         </div>
                     </td>
                     <td class="border border-gray-300 p-1">
-                        {c.categoryTotal}
+                        <span>{categoryTotals.find(t => t.name === c.name)?.total || 0}</span>
                     </td>
                     <td class="border border-gray-300 p-1">
                         {#await calculateDifference(c)}

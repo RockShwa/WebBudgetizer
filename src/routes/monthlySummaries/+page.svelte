@@ -185,33 +185,6 @@
         }
     }
 
-    // need starting
-    // need total for all
-    // need slope
-
-        // if we calculate disposable income at a particular month, we should be able
-        // to plug that in and get the respective predicted savings at a particular disposable income
-
-        // mps -> 1/1-mpc -> mps = change in savings/change in disposable income 
-
-        // savings at a particular point are going to be income - expenditures
-
-        // so if I can calulcate the data points for savings at a level of income
-        // then I can get the slope with a regression
-        // and A with a regression
-
-        // so what I need to do is:
-        // 1. get transaction data
-        // 2. for each month, we make a point
-        // 3. each point contains disposable income as x and savings as y (savings is income - expenditures - sum total each month)
-        // 4. make a regression
-        // 5. take slope values
-        // 6. bind selected month to be inputted into savings function
-
-        // x is disposable income
-        // 
-        // get monthly total income
-
     let regressionResults: regression.Result;    
 
     function computeRegression(transactionData: {id: number; 
