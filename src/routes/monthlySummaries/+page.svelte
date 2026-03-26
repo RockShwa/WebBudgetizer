@@ -1,6 +1,6 @@
 <script lang="ts">
     import * as regression from 'regression';
-    import Chart from "chart.js/auto";
+    import Chart, { type TooltipItem } from "chart.js/auto";
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 
@@ -115,14 +115,15 @@
         const chartPoints = categoryData.map(c => {
             const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
+                const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
-                return isCorrectCateogry && isCorrectMonth;
+                return isCorrectCateogry && isCorrectMonth && isCorrectYear && t.amount < 0;
             })
             .reduce((sum, t) => sum + t.amount, 0);
 
             return {
                 name: c.name,
-                amount: categorySum
+                amount: Math.abs(categorySum)
             };
             }).filter(c => c.amount);
 
@@ -145,26 +146,47 @@
                         '#ec4899'
                     ]
                 }]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context: TooltipItem<'pie'>): string {
+                                const value = context.raw as number;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
             }
         })
     }
 
-    $: if (pieCanvas && categoryData.length > 0 && selectedMonth) {
+    $: if (pieCanvas && categoryData.length > 0 && selectedMonth && selectedYear) {
         renderPieChart();
     }
 
     function createYearOptions() {
-        const yearSelect = document.getElementById('year-select');
+        const selects = [
+            document.getElementById('year-select-main'),
+            document.getElementById('year-select-pie')
+        ];
+
         const addedYears = new SvelteSet<number>(); // track months added
 
         for (const t of transactionData) {
             const year = new Date(t.timestamp).getFullYear(); 
             if (!addedYears.has(year)) {
-                const opt = document.createElement('option');
-                opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                selectedYear = opt.textContent;
-                yearSelect?.appendChild(opt);
-                addedYears.add(year)
+                selects.forEach(select => {
+                    if (select) {
+                        const opt = document.createElement('option');
+                        opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                        selectedYear = opt.textContent;
+                        select?.appendChild(opt);
+                        addedYears.add(year)
+                    }
+                })
             }
         }
     }
@@ -223,20 +245,34 @@
     }
     
     let prediction = 0;
+    let currentIncome: number;
+    let currentSpendings: number;
 
     $: if (regressionResults && selectedMonth && selectedYear) {
         const m = regressionResults.equation[0];
         const a = regressionResults.equation[1];
 
-        const currentIncome = transactionData
+        currentIncome = transactionData
             .filter(t => {
                 const d = new Date(t.timestamp);
                 return d.toLocaleString('default', {month: 'long'}) === selectedMonth &&
-                    d.getFullYear().toLocaleString() === selectedYear && t.amount > 0;
+                    d.getFullYear().toString() === selectedYear && t.amount > 0;
             })
-            .reduce((sum, t) => sum + t.amount, 0);
+            .reduce((sum, t) => sum + t.amount, 0);  
+            
+        currentSpendings = transactionData
+        .filter(t => {
+            const d = new Date(t.timestamp);
+            return d.toLocaleString('default', {month: 'long'}) === selectedMonth &&
+                d.getFullYear().toString() === selectedYear && t.amount < 0;
+        })
+        .reduce((sum, t) => sum + t.amount, 0);  
 
-        prediction = a + (m * currentIncome); 
+        if (a + (m * currentIncome) <= 0) {
+            prediction = 0;
+        } else {
+            prediction = a + (m * currentIncome); 
+        }
     }
     
 </script>
@@ -263,7 +299,7 @@
         </select>
 
         <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
-            <select class="select" id="year-select">
+            <select class="select" id="year-select-main" bind:value={selectedYear}>
             </select>
         </label>
     </div>
@@ -277,13 +313,15 @@
                 </select>
             </label>
             <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
-                <select class="select" id="month-select" bind:value={selectedYear}>
+                <select class="select" id="year-select-pie" bind:value={selectedYear}>
                 </select>
             </label>
             <canvas bind:this={pieCanvas}></canvas>
 
             <div class="font-bold">
                 <!-- here will be predicted savings -->
+                <p>Current Spendings: ${currentSpendings}</p>
+                <p>Current Income: ${currentIncome}</p>
                 Predicted Savings: ${prediction}
             </div>
         </div>

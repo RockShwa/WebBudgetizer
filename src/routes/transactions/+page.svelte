@@ -170,6 +170,13 @@
         file = input.files?.[0];
 
         if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+            alert("Please select a CSV file")
+            input.value = "";
+            return;
+        }
+
         const formData = new FormData();
         formData.append('file', file);
         
@@ -330,7 +337,7 @@
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
                 const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
                 return isCorrectYear && isCorrectMonth;
-        });    
+        });  
 
 </script>
 
@@ -360,6 +367,7 @@
         </label>
 
         <label class="font-bold bg-white rounded-sm m-0.5 p-1"> Upload
+            <!-- accept=".csv" -->
             <input on:change={uploadFile} type="file" id="file" class="hidden"/>
         </label>
 
@@ -377,7 +385,7 @@
     </div> 
 
     <!-- table div -->
-    <div class="flex m-3">
+    <div class="flex flex-row m-3">
         <table class="border-collapse border border-gray-300">
             <thead>
                 <tr class="bg-gray-300">
@@ -399,7 +407,11 @@
             </tbody>
         </table>
 
-
+        <div>
+            Please Right
+            Click a Category 
+            Cell to Change It
+        </div>
     </div>
 </div>
 

@@ -85,7 +85,11 @@
         const categoryTotal: number = await response.json();
 
         if (category.goal === 0 && category.defaultGoal === 0) {
-            return category.categoryTotal;
+            return category.categoryTotal;   
+        } else if (category.goal === 0 && category.defaultGoal !== 0) {
+            return Number(category.defaultGoal) - Number(categoryTotal);
+        } else if (category.goal !== 0 && category.defaultGoal === 0) {
+            return Number(category.goal) - Number(categoryTotal);
         } else {
             return Number(category.goal) - Number(categoryTotal);
         }
@@ -131,6 +135,21 @@
         }
     }
 
+    function updateColorCoding(difference: number) {
+            // if difference < 0 -> yellow
+            // if difference > 0 -> blue
+            // if difference === 0 -> green; 
+
+            if (difference < 0) {
+                return "bg-[rgb(235,230,148)]";
+            } else if (difference > 0) {
+                return "bg-[rgb(186,214,255)]";
+            } else if (difference === 0) {
+                return "bg-[rgb(129,204,149)]";
+            }
+
+        }
+
     function calculateCategorySum(c: {name: string}, month: string, year: string) {
         const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(month);
@@ -165,7 +184,6 @@
     <form class="my-6 bg-white" on:submit|preventDefault={handleAddCategory}>
         <label class="font-bold text-gray-800 m-3 bg-white" for="todo">Add Category</label>
         <div class="flex flex-row text-sm mb-2 bg-white">
-            <!-- bind todo value inside input (to store the variable there)-->
             <input type="text" bind:value={categoryName} name="category" placeholder="Enter Category Here"
             class="appearance-none shadow-sm border border-gray-200 p-2 focus:outline-non focus:border-gray-500
             rounded-lg"/>
@@ -217,11 +235,11 @@
                     <td class="border border-gray-300 p-1">
                         <span>{categoryTotals.find(t => t.name === c.name)?.total || 0}</span>
                     </td>
-                    <td class="border border-gray-300 p-1">
+                    <td class="border border-gray-300 p-1" id="color-coded">
                         {#await calculateDifference(c)}
                             <span></span>
                         {:then diff}
-                            <span>{diff}</span>
+                            <div class="{updateColorCoding(diff)}">{diff}</div>
                         {/await}
                     </td>
                     <td class="border border-gray-300 p-1"><button
