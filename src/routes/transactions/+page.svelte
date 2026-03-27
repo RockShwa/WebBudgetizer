@@ -29,8 +29,8 @@
 
     let file: File | undefined;
 
-    let selectedMonth = "";
-    let selectedYear = "";
+    let selectedMonth = "July";
+    let selectedYear = "2024";
 
     export function navigateBack() {
         history.go(-1);
@@ -197,7 +197,7 @@
             if (!addedMonths.has(month)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
-                selectedMonth = opt.textContent;
+                //selectedMonth = opt.textContent;
                 monthSelect?.appendChild(opt);
                 addedMonths.add(month)
             }
@@ -213,7 +213,7 @@
             if (!addedYears.has(year)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                selectedYear = opt.textContent;
+                //selectedYear = opt.textContent;
                 yearSelect?.appendChild(opt);
                 addedYears.add(year)
             }
@@ -334,6 +334,8 @@
         ];
 
         $: filteredTransactions = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+                if (!t.timestamp) return false;
+            
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
                 const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
                 return isCorrectYear && isCorrectMonth;
@@ -348,13 +350,13 @@
 </svelte:head>
 
 
-<div class="flex flex-col" style="background-color:rgb(143, 201, 163);">
+<div class="flex flex-col">
     <!-- menu div -->
     <div class="flex m-2">
-        <a href={resolve("/manageCategories")} class="font-bold bg-white rounded-sm m-0.5 p-1">Manage Categories</a>
+        <a href={resolve("/manageCategories")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Manage Categories</a>
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Sort
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Sort
             <select class="select" on:change={(e) => {
                 const value = (e.target as HTMLSelectElement).value;
 
@@ -366,22 +368,22 @@
             </select>
         </label>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1"> Upload
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1"> Upload
             <!-- accept=".csv" -->
             <input on:change={uploadFile} type="file" id="file" class="hidden"/>
         </label>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
             <select class="select" id="month-select" bind:value={selectedMonth}></select>
         </label>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
             <select class="select" id="year-select" bind:value={selectedYear}>
             </select>
         </label>
 
 
-        <a href={resolve("/")} class="font-bold bg-white rounded-sm m-0.5 p-1">Back</a>  
+        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
     </div> 
 
     <!-- table div -->
@@ -407,10 +409,10 @@
             </tbody>
         </table>
 
-        <div>
-            Please Right
-            Click a Category 
-            Cell to Change It
+        <div class="m-5 font-bold bg-blue-500 rounded-sm p-3">
+            <p>Please Right</p>
+            <p>Click a Category</p>
+            <p>Cell to Change It</p>
         </div>
     </div>
 </div>

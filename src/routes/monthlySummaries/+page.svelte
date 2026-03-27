@@ -3,10 +3,12 @@
     import Chart, { type TooltipItem } from "chart.js/auto";
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 
     onMount(() => {
         createYearOptions();
         createMonthOptions();
+        handleCategorySelection();
     });
 
     export let data: { 
@@ -27,9 +29,9 @@
     let categoryData = data.categoryData ?? [];
     $: transactionData = data.transactionData ?? [];
 
-    let selectedCategory = "";
-    let selectedYear = "";
-    let selectedMonth = "";
+    let selectedCategory = "Out to Eat";
+    let selectedYear = "2024";
+    let selectedMonth = "July";
     let canvas: HTMLCanvasElement;
     let chartInstance: Chart;
 
@@ -47,26 +49,21 @@
             return year >= parseFloat(startYear) && year <= parseFloat(endYear);
         })
 
-        const formattedData = filteredTransactions.map((t: { timestamp: string, amount: number}) => {
-            const dateObj = new Date(t.timestamp);
-            return {
-                x: dateObj.getMonth(),
-                y: t.amount
-            }
-        });
+        const regInput: [number, number][] = filteredTransactions.map((t: { timestamp: string, amount: number }) => [
+            new Date(t.timestamp).getMonth(),
+            Math.abs(t.amount)
+        ]);
 
-        const regInput = formattedData.map((d: { x: number, y: number})  => [d.x, d.y]);
+        
 
+        regInput.sort((a, b) => a[0] - b[0]);
+        
         const reg = regression.linear(regInput);
-
-        // create the best fit data (two relevant points) -> start and end
-        const startX = regInput[0][0];
-        const endX = regInput[regInput.length - 1][0];
 
         const bestFit = [
             // x is time, y is amount
-            {x: startX, y: reg.equation[1]},
-            {x: endX, y: reg.equation[0] * endX + reg.equation[1]}
+            { x: 0, y: reg.predict(0)[1] },
+            { x: 11, y: reg.predict(11)[1] }
         ];
 
         if (chartInstance) chartInstance.destroy();
@@ -79,7 +76,7 @@
                         label: "Category Transactions",
                         data: transactions.map((t: { timestamp: string, amount: number}) => ({
                             x: new Date(t.timestamp).getMonth(),
-                            y: t.amount
+                            y: Math.abs(t.amount)
                         })),
                         backgroundColor: 'blue'
                     },
@@ -182,7 +179,6 @@
                     if (select) {
                         const opt = document.createElement('option');
                         opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                        selectedYear = opt.textContent;
                         select?.appendChild(opt);
                         addedYears.add(year)
                     }
@@ -200,7 +196,6 @@
             if (!addedMonths.has(month)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
-                selectedMonth = opt.textContent;
                 monthSelect?.appendChild(opt);
                 addedMonths.add(month)
             }
@@ -287,18 +282,18 @@
             Monthly Summaries
         </h1>
         <div class="w-280 h-2 rounded-2xl bg-blue-500 mt-2"></div>
-        <button class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1 ml-4">Back</button>
+        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
     </div>
 
     <div class="flex flex-row items-center">
-        <label for="month" class="rounded-l bg-blue-500 h-7 ml-2">Category</label>
+        <label for="month" class="rounded-l bg-blue-500 font-bold h-7 ml-2">Category</label>
         <select bind:value={selectedCategory} on:change={handleCategorySelection} class="rounded-r bg-blue-500 h-7 mr-2">
             {#each categoryData as c (c.name)}
                 <option>{c.name}</option>
             {/each}
         </select>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
             <select class="select" id="year-select-main" bind:value={selectedYear}>
             </select>
         </label>
@@ -307,16 +302,17 @@
     <div class="flex flex-col">
         <canvas bind:this={canvas}></canvas>
 
-        <div id="pi-chart-container" class="w-full h-64 mx-auto flex flex-row">
-            <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
+        <div id="pi-chart-container" class="mx-auto flex flex-row">
+            <label class="h-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
                 <select class="select" id="month-select" bind:value={selectedMonth}>
                 </select>
-            </label>
-            <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+            </label> 
+
+            <label class="h-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
                 <select class="select" id="year-select-pie" bind:value={selectedYear}>
                 </select>
             </label>
-            <canvas bind:this={pieCanvas}></canvas>
+            <canvas class="h-1/12 w-1/12" bind:this={pieCanvas}></canvas>
 
             <div class="font-bold">
                 <!-- here will be predicted savings -->

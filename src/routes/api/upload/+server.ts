@@ -25,7 +25,7 @@ export async function POST({request}) {
     // Start at actual transactions not summary
     const startI = text.indexOf('Date,Description,Amount');
 
-    const slicedCSV = text.slice(startI + 1);
+    const slicedCSV = text.slice(startI);
 
 
     const records: TransactionRow[] = parse(slicedCSV, {

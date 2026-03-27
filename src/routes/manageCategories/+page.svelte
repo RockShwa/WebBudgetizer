@@ -77,23 +77,21 @@
                 })
             });
         }
-        location.reload();
     }
 
-    async function calculateDifference(category: { name: string; goal: number; defaultGoal: number; categoryTotal: number}) {
-        const response = await fetch(`/api/categories?name=${category.name}`);
-        const categoryTotal: number = await response.json();
+    $: categoryTotals = categoryData.map(c => {
+        const total = Math.abs(calculateCategorySum(c, selectedMonth, selectedYear));
 
-        if (category.goal === 0 && category.defaultGoal === 0) {
-            return category.categoryTotal;   
-        } else if (category.goal === 0 && category.defaultGoal !== 0) {
-            return Number(category.defaultGoal) - Number(categoryTotal);
-        } else if (category.goal !== 0 && category.defaultGoal === 0) {
-            return Number(category.goal) - Number(categoryTotal);
-        } else {
-            return Number(category.goal) - Number(categoryTotal);
-        }
-    }
+        const activeGoal = c.goal !== 0 ? c.goal : c.defaultGoal;
+        const diff = activeGoal - total;
+
+        return {
+            name: c.name,
+            total: total,
+            difference: diff
+        };
+    });
+
 
     let selectedMonth = "";
     let selectedYear = "";
@@ -161,11 +159,6 @@
 
         return categorySum;    
     }
-
-    $: categoryTotals = categoryData.map(c => ({
-        name: c.name,
-        total: calculateCategorySum(c, selectedMonth, selectedYear)
-    }));
 </script>
 
 <svelte:head>
@@ -175,27 +168,25 @@
 <main>
     <div class="flex flex-row justify-between m-3">
         <div class="text-2xl font-bold">Manage Categories</div>
-        <a href={resolve("/transactions")}>
-            <button class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1">Back</button>
-        </a>
+        <a href={resolve("/transactions")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
     </div>
 
     <!-- Add Category -->
-    <form class="my-6 bg-white" on:submit|preventDefault={handleAddCategory}>
-        <label class="font-bold text-gray-800 m-3 bg-white" for="todo">Add Category</label>
-        <div class="flex flex-row text-sm mb-2 bg-white">
+    <form class="my-6" on:submit|preventDefault={handleAddCategory}>
+        <label class="font-bold text-gray-800 m-3" for="category">Add Category</label>
+        <div class="flex flex-row text-sm mb-2 ">
             <input type="text" bind:value={categoryName} name="category" placeholder="Enter Category Here"
             class="appearance-none shadow-sm border border-gray-200 p-2 focus:outline-non focus:border-gray-500
             rounded-lg"/>
-            <button type="submit" class="w-auto shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 m-2">Add</button>
+            <button type="submit" class="w-auto shadow-sm rounded bg-blue-500 font-bold hover:bg-blue-600 py-2 px-4 m-2">Add</button>
         </div>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Month
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
                 <select class="select" id="month-select" bind:value={selectedMonth}>
                 </select>
         </label>
 
-        <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
+        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
             <select class="select" id="year-select" bind:value={selectedYear}>
             </select>
         </label>
@@ -236,11 +227,11 @@
                         <span>{categoryTotals.find(t => t.name === c.name)?.total || 0}</span>
                     </td>
                     <td class="border border-gray-300 p-1" id="color-coded">
-                        {#await calculateDifference(c)}
-                            <span></span>
-                        {:then diff}
-                            <div class="{updateColorCoding(diff)}">{diff}</div>
-                        {/await}
+                        {#each categoryTotals.filter(t => t.name === c.name) as item (item.name)}
+                            <div class="{updateColorCoding(item.difference)}">
+                                {item.difference}
+                            </div>
+                        {/each}
                     </td>
                     <td class="border border-gray-300 p-1"><button
                             type='button'
@@ -256,9 +247,6 @@
 </main>
 
 <style>
-    :global(body) {
-        background-color: rgb(143, 201, 163)
-    }
     tr:nth-child(even) {
         background-color: white;
     }

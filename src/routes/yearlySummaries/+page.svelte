@@ -1,11 +1,13 @@
 <script lang="ts">
     import * as regression from 'regression';
-    import Chart from "chart.js/auto";
+    import Chart, { type TooltipItem } from "chart.js/auto";
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
+	import { resolve } from '$app/paths';
 
     onMount(() => {
         createYearOptions();
+        handleCategorySelection();
     });
 
     export let data: { 
@@ -27,10 +29,10 @@
     let transactionData = data.transactionData ?? [];
 
 
-    let selectedCategory = "";
+    let selectedCategory = "Out to Eat";
     let canvas: HTMLCanvasElement;
     let chartInstance: Chart;
-    let selectedYear = "";
+    let selectedYear = "2024";
 
 
     export async function graphRegression(categoryName: string) {
@@ -46,7 +48,7 @@
             const dateObj = new Date(t.timestamp);
             return {
                 x: dateObj.getMonth(),
-                y: t.amount
+                y: Math.abs(t.amount)
             }
         });
 
@@ -59,9 +61,14 @@
         const endX = regInput[regInput.length - 1][0];
 
         const bestFit = [
-            // x is time, y is amount
-            {x: startX, y: reg.equation[1]},
-            {x: endX, y: reg.equation[0] * endX + reg.equation[1]}
+            { 
+                x: startX, 
+                y: reg.equation[0] * startX + reg.equation[1] // Calculate y for the first x
+            },
+            { 
+                x: endX, 
+                y: reg.equation[0] * endX + reg.equation[1]   // Calculate y for the last x
+            }
         ];
 
         if (chartInstance) chartInstance.destroy();
@@ -74,7 +81,7 @@
                         label: "Category Transactions",
                         data: transactions.map((t: { timestamp: string, amount: number}) => ({
                             x: new Date(t.timestamp).getMonth(),
-                            y: t.amount
+                            y: Math.abs(t.amount)
                         })),
                         backgroundColor: 'blue'
                     },
@@ -96,28 +103,30 @@
         
     }
 
-
     let pieCanvas: HTMLCanvasElement;
     let pieChartInstance: Chart;
 
     // figure out how to make diff from monthly summaries
     async function renderPieChart() {
-
-        if (pieChartInstance) pieChartInstance.destroy();
+         if (pieChartInstance) pieChartInstance.destroy();
 
         const chartPoints = categoryData.map(c => {
             const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
-                const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
+                const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
-                return isCorrectCateogry && isCorrectYear;
+                return isCorrectCateogry && isCorrectYear && t.amount < 0;
             })
             .reduce((sum, t) => sum + t.amount, 0);
 
             return {
                 name: c.name,
-                amount: categorySum
+                amount: Math.abs(categorySum)
             };
             }).filter(c => c.amount);
+
+        const total = chartPoints.reduce((sum, c) => sum + c.amount, 0); 
+
+        if (total === 0) return;
 
         pieChartInstance = new Chart(pieCanvas, {
             type: 'pie',
@@ -134,6 +143,19 @@
                         '#ec4899'
                     ]
                 }]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context: TooltipItem<'pie'>): string {
+                                const value = context.raw as number;
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
             }
         })
     }
@@ -151,7 +173,6 @@
             if (!addedYears.has(year)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                selectedYear = opt.textContent;
                 yearSelect?.appendChild(opt);
                 addedYears.add(year)
             }
@@ -170,11 +191,11 @@
             Yearly Summaries
         </h1>
         <div class="w-280 h-2 rounded-2xl bg-blue-500 mt-2"></div>
-        <button class="w-20 shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white py-1 ml-4">Back</button>
+        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
     </div>
 
     <div class="flex flex-row items-center">
-        <label for="month" class="rounded-l bg-blue-500 h-7 ml-2">Category</label>
+        <label for="month" class="rounded-l font-bold bg-blue-500 h-7 ml-2">Category</label>
         <select bind:value={selectedCategory} on:change={handleCategorySelection} class="rounded-r bg-blue-500 h-7 mr-2">
             {#each categoryData as c (c.name)}
                 <option>{c.name}</option>
@@ -184,14 +205,16 @@
 
     <div class="flex flex-col">
         <canvas bind:this={canvas}></canvas>
+        
+        <label class="w-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
+            <select class="select" id="year-select" bind:value={selectedYear}>
+            </select>
+        </label>
 
         <div id="pi-chart-container" class="w-full h-64 mx-auto flex flex-row">
-            <label class="font-bold bg-white rounded-sm m-0.5 p-1">Year
-                <select class="select" id="year-select" bind:value={selectedYear}>
-                </select>
-            </label>
             <canvas bind:this={pieCanvas}></canvas>
         </div>
+        
     </div>
 </div>
 
