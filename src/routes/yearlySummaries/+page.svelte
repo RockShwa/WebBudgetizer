@@ -186,12 +186,11 @@
 </svelte:head>
 
 <div class="flex flex-col">
-    <div class="flex flex-row items-center">
+    <div class="flex flex-row items-center justify-between">
         <h1 class="text-3xl p-3 font-bold">
             Yearly Summaries
         </h1>
-        <div class="w-280 h-2 rounded-2xl bg-blue-500 mt-2"></div>
-        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
+        <a href={resolve("/")} class="flex mr-3 font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Back</a>  
     </div>
 
     <div class="flex flex-row items-center">

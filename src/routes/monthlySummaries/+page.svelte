@@ -277,19 +277,18 @@
 </svelte:head>
 
 <div class="flex flex-col">
-    <div class="flex flex-row items-center">
+    <div class="flex flex-row items-center justify-between">
         <h1 class="text-3xl p-3 font-bold">
             Monthly Summaries
         </h1>
-        <div class="w-280 h-2 rounded-2xl bg-blue-500 mt-2"></div>
-        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
+        <a href={resolve("/")} class="font-bold mr-3 bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Back</a>  
     </div>
 
     <div class="flex flex-row items-center">
         <label for="month" class="rounded-l bg-blue-500 font-bold h-7 ml-2">Category</label>
         <select bind:value={selectedCategory} on:change={handleCategorySelection} class="rounded-r bg-blue-500 h-7 mr-2">
             {#each categoryData as c (c.name)}
-                <option>{c.name}</option>
+                <option class="font-bold">{c.name}</option>
             {/each}
         </select>
 
@@ -303,23 +302,26 @@
         <canvas bind:this={canvas}></canvas>
 
         <div id="pi-chart-container" class="mx-auto flex flex-row">
-            <label class="h-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
-                <select class="select" id="month-select" bind:value={selectedMonth}>
-                </select>
-            </label> 
+            <div class="flex flex-col">
+                <label class="h-fit w-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
+                    <select class="select" id="month-select" bind:value={selectedMonth}>
+                    </select>
+                </label> 
 
-            <label class="h-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
-                <select class="select" id="year-select-pie" bind:value={selectedYear}>
-                </select>
-            </label>
-            <canvas class="h-1/12 w-1/12" bind:this={pieCanvas}></canvas>
+                <label class="h-fit w-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
+                    <select class="select" id="year-select-pie" bind:value={selectedYear}>
+                    </select>
+                </label>
 
-            <div class="font-bold">
-                <!-- here will be predicted savings -->
-                <p>Current Spendings: ${currentSpendings}</p>
-                <p>Current Income: ${currentIncome}</p>
-                Predicted Savings: ${prediction}
+                <div class="font-bold rounded-sm h-fit m-0.5 bg-blue-500 p-2">
+                    <!-- here will be predicted savings -->
+                    <p>Current Spendings: ${currentSpendings}</p>
+                    <p>Current Income: ${currentIncome}</p>
+                    Predicted Savings: ${prediction}
+                </div>
             </div>
+            
+            <canvas class="h-1/12 w-1/12" bind:this={pieCanvas}></canvas>
         </div>
     </div>
 </div>

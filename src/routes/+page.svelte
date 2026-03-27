@@ -6,36 +6,24 @@
     <title>Dashboard</title>
 </svelte:head>
 
-<main>
-    <h1 class="text-2xl font-bold text-center text-gray-800 md:text-3xl my-6">FreeBudgetPro</h1>
+<main class="p-6">
+    <h1 class="text-3xl font-extrabold text-center text-gray-900 my-2">FreeBudgetPro</h1>
+    <p class="font-bold text-center text-gray-600 mb-10">Taking control of your finances</p>
 
-    <div class="button-grid flex justify-self-center">
-        <!-- px-[70%] and properties like it will adapt to the viewport -->
-        <a href={resolve("/transactions")}>
-            <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-100% px-[70%] py-[15%]">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <a href={resolve("/transactions")} class="w-full flex">
+            <button type="button" class="w-full py-6 px-4 rounded-xl bg-blue-600 font-bold transition-all active:scale-95">
                 Transactions</button>
         </a>     
-        <a href={resolve("/yearlySummaries")}>
-            <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-[150%] px-[30%] py-[10%]">
+        <a href={resolve("/yearlySummaries")} class="w-full flex">
+            <button type="button" class="w-full py-6 px-4 rounded-xl bg-blue-600 font-bold transition-all active:scale-95">
                 Yearly Summaries</button>
         </a>  
-            <button></button>
-        <a href={resolve("/monthlySummaries")}>   
-            <button type="button" class="shadow-sm rounded bg-blue-500 hover:bg-blue-600 text-white w-[150%] px-[15%] py-[10%]">
+        <a href={resolve("/monthlySummaries")} class="w-full flex md:col-span-2">    
+            <button type="button" class="w-full py-6 px-4 rounded-xl bg-blue-600 font-bold transition-all active:scale-95">
                 Monthly Summaries
             </button>
         </a> 
     </div>
-
-    <style> 
-        .button-grid {
-            flex-direction: column;
-            display: grid;
-            grid-template-columns: auto auto;
-            gap: 10px 150px;
-            justify-content: center;
-            align-items: center; 
-        }
-    </style>
 </main>
 

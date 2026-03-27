@@ -93,8 +93,8 @@
     });
 
 
-    let selectedMonth = "";
-    let selectedYear = "";
+    let selectedMonth = "January";
+    let selectedYear = "2023";
 
     const monthNames = [
         "January", "February", "March", "April", "May", "June",
@@ -110,7 +110,6 @@
             if (!addedYears.has(year)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                selectedYear = opt.textContent;
                 yearSelect?.appendChild(opt);
                 addedYears.add(year)
             }
@@ -126,7 +125,6 @@
             if (!addedMonths.has(month)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
-                selectedMonth = opt.textContent;
                 monthSelect?.appendChild(opt);
                 addedMonths.add(month)
             }
@@ -168,7 +166,7 @@
 <main>
     <div class="flex flex-row justify-between m-3">
         <div class="text-2xl font-bold">Manage Categories</div>
-        <a href={resolve("/transactions")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
+        <a href={resolve("/transactions")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Back</a>  
     </div>
 
     <!-- Add Category -->
@@ -178,7 +176,7 @@
             <input type="text" bind:value={categoryName} name="category" placeholder="Enter Category Here"
             class="appearance-none shadow-sm border border-gray-200 p-2 focus:outline-non focus:border-gray-500
             rounded-lg"/>
-            <button type="submit" class="w-auto shadow-sm rounded bg-blue-500 font-bold hover:bg-blue-600 py-2 px-4 m-2">Add</button>
+            <button type="submit" class="w-auto shadow-sm rounded bg-blue-500 font-bold hover:bg-blue-600 py-2 px-4 m-2 active:scale-95">Add</button>
         </div>
 
         <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
@@ -199,7 +197,7 @@
             <thead>
                 <tr class="bg-gray-300">
                     <th class="border border-gray-300 p-1">Category Name</th>
-                    <th class="border border-gray-300 p-1">Goal</th>
+                    <th class="border border-gray-300 p-1">Monthly Goal</th>
                     <th class="border border-gray-300 p-1">Default Goal</th>
                     <th class="border border-gray-300 p-1">Category Total</th>
                     <th class="border border-gray-300 p-1">Difference</th>
@@ -235,7 +233,7 @@
                     </td>
                     <td class="border border-gray-300 p-1"><button
                             type='button'
-                            class='text-sm bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded focus:outline-none focus:shadow-outline'
+                            class='text-sm bg-red-500 text-white py-1 px-2 rounded active:scale-95'
                             on:click={() => handleDeleteCategory(c)}>Delete
                     </button></td>
                 </tr>

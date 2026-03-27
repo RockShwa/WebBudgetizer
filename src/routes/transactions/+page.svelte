@@ -353,7 +353,7 @@
 <div class="flex flex-col">
     <!-- menu div -->
     <div class="flex m-2">
-        <a href={resolve("/manageCategories")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Manage Categories</a>
+        <a href={resolve("/manageCategories")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Manage Categories</a>
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
         <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Sort
@@ -383,7 +383,7 @@
         </label>
 
 
-        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Back</a>  
+        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Back</a>  
     </div> 
 
     <!-- table div -->
