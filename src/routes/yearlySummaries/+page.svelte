@@ -203,6 +203,8 @@
     </div>
 
     <div class="flex flex-col">
+        <h2 class="ml-2 mt-2 font-bold text-2xl">{selectedCategory} Trend for All Years</h2>
+
         <canvas bind:this={canvas}></canvas>
         
         <label class="w-fit font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year

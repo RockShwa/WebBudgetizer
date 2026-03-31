@@ -299,6 +299,9 @@
     </div>
 
     <div class="flex flex-col">
+
+        <h2 class="ml-2 mt-2 font-bold text-2xl">{selectedCategory} Trend for {selectedYear}</h2>
+
         <canvas bind:this={canvas}></canvas>
 
         <div id="pi-chart-container" class="mx-auto flex flex-row">
