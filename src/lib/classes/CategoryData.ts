@@ -1,9 +1,9 @@
-export class CategoryData {
+export class Category {
     name: string = "";
     goal: number = 0;
     defaultGoal: number = 0;
 
-    constructor(init: Partial<CategoryData>) {
+    constructor(init: Partial<Category>) {
         Object.assign(this, init)
     }
 }

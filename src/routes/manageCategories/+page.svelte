@@ -1,13 +1,13 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
-	import type { CategoryData } from '$lib/classes/CategoryData';
-	import { TransactionData } from '$lib/classes/TransactionData';
+	import type { Category } from '$lib/classes/CategoryData';
+	import { Transaction } from '$lib/classes/TransactionData';
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
     export let data: { 
-        transactionData: TransactionData[];
-        categoryData: CategoryData[];
+        transactionData: Transaction[];
+        categoryData: Category[];
     };
 
     let categoryData = data.categoryData ?? [];
@@ -138,7 +138,7 @@
         }
 
     function calculateCategorySum(c: {name: string}, month: string, year: string) {
-        const categorySum = transactionData.filter((t: TransactionData) => {
+        const categorySum = transactionData.filter((t: Transaction) => {
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(month);
                 const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(year);
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();

@@ -2,12 +2,12 @@
     import { resolve } from '$app/paths';
 	import { SvelteSet } from 'svelte/reactivity';
     import { onMount } from 'svelte';
-	import type { TransactionData } from '$lib/classes/TransactionData';
-	import type { CategoryData } from '$lib/classes/CategoryData';
+	import type { Transaction } from '$lib/classes/TransactionData';
+	import type { Category } from '$lib/classes/CategoryData';
 
     export let data: { 
-        transactionData: TransactionData[];
-        categoryData: CategoryData[];
+        transactionData: Transaction[];
+        categoryData: Category[];
     };
 
     onMount(() => {
@@ -28,11 +28,11 @@
         history.go(-1);
     }
 
-    export function sortTime(transactions: TransactionData[]) {
+    export function sortTime(transactions: Transaction[]) {
         
         if (transactions.length <= 1) return transactions;
     
-        let result: TransactionData[]=[];
+        let result: Transaction[]=[];
 
         let left;
         let right;
@@ -82,10 +82,10 @@
         transactionData = sortTime(transactionData);
     }
 
-    export function sortAmount(transactions: TransactionData[]) {
+    export function sortAmount(transactions: Transaction[]) {
         if (transactions.length <= 1) return transactions;
     
-        let result: TransactionData[]=[];
+        let result: Transaction[]=[];
         let left;
         let right;
         
@@ -190,9 +190,9 @@
 
     let showMenu = false;
     let pos = { x: 0, y: 0 };
-    let selectedTransaction: TransactionData | null = null;
+    let selectedTransaction: Transaction | null = null;
 
-    function handleRightClick(e: MouseEvent, transaction: TransactionData) {
+    function handleRightClick(e: MouseEvent, transaction: Transaction) {
 
         selectedTransaction = transaction;
 
@@ -204,7 +204,7 @@
         showMenu = false;
     }
 
-    async function updateTransactionCategory(transaction: TransactionData, categoryName: string) {
+    async function updateTransactionCategory(transaction: Transaction, categoryName: string) {
 
         await fetch ('/api/transactions', {
             method: 'PATCH', 
@@ -253,7 +253,7 @@
             return bestCategory;
         }
 
-    async function addAmountToCategory(transaction: TransactionData, categoryName: string) {
+    async function addAmountToCategory(transaction: Transaction, categoryName: string) {
 
             const response = await fetch(`/api/transactions?name=${categoryName}`);
             const catTotal: number = await response.json();
@@ -277,7 +277,7 @@
         "July", "August", "September", "October", "November", "December"
         ];
 
-        $: filteredTransactions = transactionData.filter((t: TransactionData) => {
+        $: filteredTransactions = transactionData.filter((t: Transaction) => {
                 if (!t.timestamp) return false;
             
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);

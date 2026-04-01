@@ -4,8 +4,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { TransactionData } from '$lib/classes/TransactionData';
-	import type { CategoryData } from '$lib/classes/CategoryData';
+	import type { Transaction } from '$lib/classes/TransactionData';
+	import type { Category } from '$lib/classes/CategoryData';
 
     onMount(() => {
         createYearOptions();
@@ -13,8 +13,8 @@
     });
 
     export let data: { 
-        transactionData: TransactionData[];
-        categoryData: CategoryData[];
+        transactionData: Transaction[];
+        categoryData: Category[];
     };
 
     // get class
@@ -105,7 +105,7 @@
          if (pieChartInstance) pieChartInstance.destroy();
 
         const chartPoints = categoryData.map(c => {
-            const categorySum = transactionData.filter((t: TransactionData) => {
+            const categorySum = transactionData.filter((t: Transaction) => {
                 const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
                 return isCorrectCateogry && isCorrectYear && t.amount < 0;

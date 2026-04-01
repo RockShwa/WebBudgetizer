@@ -1,11 +1,11 @@
-export class TransactionData {
+export class Transaction {
     id: number = 0;
     timestamp: number = 0;
     amount: number = 0;
     category: string = "";
     description: string = "";
 
-    constructor(init: Partial<TransactionData>) {
+    constructor(init: Partial<Transaction>) {
         Object.assign(this, init)
     }
 }

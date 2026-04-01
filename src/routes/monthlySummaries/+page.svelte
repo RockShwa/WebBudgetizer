@@ -4,8 +4,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { TransactionData } from '$lib/classes/TransactionData';
-	import type { CategoryData } from '$lib/classes/CategoryData';
+	import type { Transaction } from '$lib/classes/TransactionData';
+	import type { Category } from '$lib/classes/CategoryData';
 
     onMount(() => {
         createYearOptions();
@@ -14,8 +14,8 @@
     });
 
     export let data: { 
-        transactionData: TransactionData[];
-        categoryData: CategoryData[];
+        transactionData: Transaction[];
+        categoryData: Category[];
     };
     let categoryData = data.categoryData ?? [];
     $: transactionData = data.transactionData ?? [];
@@ -101,7 +101,7 @@
         if (pieChartInstance) pieChartInstance.destroy();
 
         const chartPoints = categoryData.map(c => {
-            const categorySum = transactionData.filter((t: TransactionData) => {
+            const categorySum = transactionData.filter((t: Transaction) => {
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
                 const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
@@ -195,7 +195,7 @@
 
     let regressionResults: regression.Result;    
 
-    function computeRegression(transactionData: TransactionData[]) {
+    function computeRegression(transactionData: Transaction[]) {
         const monthGroups: Record<string, { income: number, savings: number }> = {};
 
         transactionData.forEach(t => {
