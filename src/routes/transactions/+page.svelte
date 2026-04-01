@@ -2,20 +2,12 @@
     import { resolve } from '$app/paths';
 	import { SvelteSet } from 'svelte/reactivity';
     import { onMount } from 'svelte';
+	import type { TransactionData } from '$lib/classes/TransactionData';
+	import type { CategoryData } from '$lib/classes/CategoryData';
 
     export let data: { 
-        transactionData: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[];
-        categoryData: {
-            name: string; 
-            goal: number; 
-            defaultGoal: number; 
-        }[];
+        transactionData: TransactionData[];
+        categoryData: CategoryData[];
     };
 
     onMount(() => {
@@ -36,23 +28,11 @@
         history.go(-1);
     }
 
-    export function sortTime(transactions: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[]) {
+    export function sortTime(transactions: TransactionData[]) {
         
         if (transactions.length <= 1) return transactions;
     
-        let result: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[]=[];
+        let result: TransactionData[]=[];
 
         let left;
         let right;
@@ -102,22 +82,10 @@
         transactionData = sortTime(transactionData);
     }
 
-    export function sortAmount(transactions: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[]) {
+    export function sortAmount(transactions: TransactionData[]) {
         if (transactions.length <= 1) return transactions;
     
-        let result: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[]=[];
+        let result: TransactionData[]=[];
         let left;
         let right;
         
@@ -222,21 +190,9 @@
 
     let showMenu = false;
     let pos = { x: 0, y: 0 };
-    let selectedTransaction: | { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        } | null = null;
+    let selectedTransaction: TransactionData | null = null;
 
-    function handleRightClick(e: MouseEvent, transaction: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }) {
+    function handleRightClick(e: MouseEvent, transaction: TransactionData) {
 
         selectedTransaction = transaction;
 
@@ -248,13 +204,7 @@
         showMenu = false;
     }
 
-    async function updateTransactionCategory(transaction: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }, categoryName: string) {
+    async function updateTransactionCategory(transaction: TransactionData, categoryName: string) {
 
         await fetch ('/api/transactions', {
             method: 'PATCH', 
@@ -303,13 +253,7 @@
             return bestCategory;
         }
 
-    async function addAmountToCategory(transaction: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }, categoryName: string) {
+    async function addAmountToCategory(transaction: TransactionData, categoryName: string) {
 
             const response = await fetch(`/api/transactions?name=${categoryName}`);
             const catTotal: number = await response.json();
@@ -333,7 +277,7 @@
         "July", "August", "September", "October", "November", "December"
         ];
 
-        $: filteredTransactions = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+        $: filteredTransactions = transactionData.filter((t: TransactionData) => {
                 if (!t.timestamp) return false;
             
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);

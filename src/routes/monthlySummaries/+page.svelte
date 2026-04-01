@@ -4,6 +4,8 @@
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
+	import type { TransactionData } from '$lib/classes/TransactionData';
+	import type { CategoryData } from '$lib/classes/CategoryData';
 
     onMount(() => {
         createYearOptions();
@@ -12,19 +14,8 @@
     });
 
     export let data: { 
-        transactionData: { 
-            id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[];
-        categoryData: {
-            name: string; 
-            goal: number; 
-            defaultGoal: number; 
-            categoryTotal: number;
-        }[];
+        transactionData: TransactionData[];
+        categoryData: CategoryData[];
     };
     let categoryData = data.categoryData ?? [];
     $: transactionData = data.transactionData ?? [];
@@ -110,7 +101,7 @@
         if (pieChartInstance) pieChartInstance.destroy();
 
         const chartPoints = categoryData.map(c => {
-            const categorySum = transactionData.filter((t: { id: number, timestamp: string, amount: number, category: string, description: string}) => {
+            const categorySum = transactionData.filter((t: TransactionData) => {
                 const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
                 const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
                 const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
@@ -204,12 +195,7 @@
 
     let regressionResults: regression.Result;    
 
-    function computeRegression(transactionData: {id: number; 
-            timestamp: string; 
-            amount: number; 
-            category: string; 
-            description: string; 
-        }[]) {
+    function computeRegression(transactionData: TransactionData[]) {
         const monthGroups: Record<string, { income: number, savings: number }> = {};
 
         transactionData.forEach(t => {
