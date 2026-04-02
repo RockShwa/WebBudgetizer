@@ -2,8 +2,8 @@
     import { resolve } from '$app/paths';
 	import { SvelteSet } from 'svelte/reactivity';
     import { onMount } from 'svelte';
-	import type { Transaction } from '$lib/classes/TransactionData';
-	import type { Category } from '$lib/classes/CategoryData';
+	import type { Transaction } from '$lib/classes/Transaction';
+	import type { Category } from '$lib/classes/Category';
 
     export let data: { 
         transactionData: Transaction[];

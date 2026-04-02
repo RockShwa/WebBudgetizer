@@ -1,16 +1,16 @@
 <script lang="ts">
     import * as regression from 'regression';
-    import Chart, { type TooltipItem } from "chart.js/auto";
 	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount } from 'svelte';
 	import { resolve } from '$app/paths';
-	import type { Transaction } from '$lib/classes/TransactionData';
-	import type { Category } from '$lib/classes/CategoryData';
+	import type { Transaction } from '$lib/classes/Transaction';
+	import type { Category } from '$lib/classes/Category';
+    import PieChart from '$lib/PieChart.svelte';
+	import RegressionChart from '$lib/RegressionChart.svelte';
 
     onMount(() => {
         createYearOptions();
         createMonthOptions();
-        handleCategorySelection();
     });
 
     export let data: { 
@@ -23,137 +23,6 @@
     let selectedCategory = "Out to Eat";
     let selectedYear = "2024";
     let selectedMonth = "July";
-    let canvas: HTMLCanvasElement;
-    let chartInstance: Chart;
-
-    export async function graphRegression(categoryName: string, startYear: string, endYear: string) {
-        const response = await fetch(`/api/monthlySummaries?name=${categoryName}`);
-        const transactions = await response.json();
-
-        if (!transactions || transactions.length === 0) {
-            if (chartInstance) chartInstance.destroy();
-            return;
-        }
-
-        const filteredTransactions = transactions.filter((t: { timestamp: string, amount: number}) => {
-            const year = new Date(t.timestamp).getFullYear();
-            return year >= parseFloat(startYear) && year <= parseFloat(endYear);
-        })
-
-        const regInput: [number, number][] = filteredTransactions.map((t: { timestamp: string, amount: number }) => [
-            new Date(t.timestamp).getMonth(),
-            Math.abs(t.amount)
-        ]);
-
-        
-
-        regInput.sort((a, b) => a[0] - b[0]);
-        
-        const reg = regression.linear(regInput);
-
-        const bestFit = [
-            // x is time, y is amount
-            { x: 0, y: reg.predict(0)[1] },
-            { x: 11, y: reg.predict(11)[1] }
-        ];
-
-        if (chartInstance) chartInstance.destroy();
-
-        chartInstance = new Chart(canvas, {
-            type: 'scatter',
-            data: {
-                datasets: [
-                    {
-                        label: "Category Transactions",
-                        data: transactions.map((t: { timestamp: string, amount: number}) => ({
-                            x: new Date(t.timestamp).getMonth(),
-                            y: Math.abs(t.amount)
-                        })),
-                        backgroundColor: 'blue'
-                    },
-                    {
-                        label: "Line of Best Fit",
-                        data: bestFit,
-                        type: "line",
-                        borderColor: "red"
-                    }
-                ]
-            }
-        });
-    }
-
-    async function handleCategorySelection() {
-        if (selectedCategory) {
-            await graphRegression(selectedCategory, selectedYear, selectedYear);
-        }   
-        
-    }
-
-    let pieCanvas: HTMLCanvasElement;
-    let pieChartInstance: Chart;
-
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-
-    async function renderPieChart() {
-        if (pieChartInstance) pieChartInstance.destroy();
-
-        const chartPoints = categoryData.map(c => {
-            const categorySum = transactionData.filter((t: Transaction) => {
-                const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
-                const isCorrectYear = new Date(t.timestamp).getFullYear().toString() === selectedYear;
-                const isCorrectCateogry = t.category.trim().toLowerCase() === c.name.toLowerCase();
-                return isCorrectCateogry && isCorrectMonth && isCorrectYear && t.amount < 0;
-            })
-            .reduce((sum, t) => sum + t.amount, 0);
-
-            return {
-                name: c.name,
-                amount: Math.abs(categorySum)
-            };
-            }).filter(c => c.amount);
-
-        const total = chartPoints.reduce((sum, c) => sum + c.amount, 0); 
-
-        if (total === 0) return;
-
-        pieChartInstance = new Chart(pieCanvas, {
-            type: 'pie',
-            data: {
-                labels: chartPoints.map(c => c.name),
-                datasets: [{
-                    data: chartPoints.map(c => c.amount),
-                    backgroundColor: [
-                        '#3b82f6',
-                        '#ef4444',
-                        '#10b981',
-                        '#f59e0b',
-                        '#8b5cf6',
-                        '#ec4899'
-                    ]
-                }]
-            },
-            options: {
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context: TooltipItem<'pie'>): string {
-                                const value = context.raw as number;
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${context.label}: $${value.toFixed(2)} (${percentage}%)`;
-                            }
-                        }
-                    }
-                }
-            }
-        })
-    }
-
-    $: if (pieCanvas && categoryData.length > 0 && selectedMonth && selectedYear) {
-        renderPieChart();
-    }
 
     function createYearOptions() {
         const selects = [
@@ -272,7 +141,7 @@
 
     <div class="flex flex-row items-center">
         <label for="month" class="rounded-l bg-blue-500 font-bold h-7 ml-2">Category</label>
-        <select bind:value={selectedCategory} on:change={handleCategorySelection} class="rounded-r bg-blue-500 h-7 mr-2">
+        <select bind:value={selectedCategory} class="rounded-r bg-blue-500 h-7 mr-2">
             {#each categoryData as c (c.name)}
                 <option class="font-bold">{c.name}</option>
             {/each}
@@ -288,7 +157,7 @@
 
         <h2 class="ml-2 mt-2 font-bold text-2xl">{selectedCategory} Trend for {selectedYear}</h2>
 
-        <canvas bind:this={canvas}></canvas>
+        <RegressionChart {selectedMonth} {selectedYear} {selectedCategory} {categoryData}></RegressionChart>
 
         <div id="pi-chart-container" class="mx-auto flex flex-row">
             <div class="flex flex-col">
@@ -310,7 +179,7 @@
                 </div>
             </div>
             
-            <canvas class="h-1/12 w-1/12" bind:this={pieCanvas}></canvas>
+            <PieChart {selectedMonth} {selectedYear} {transactionData} {categoryData}></PieChart>
         </div>
     </div>
 </div>

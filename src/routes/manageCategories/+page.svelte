@@ -1,7 +1,7 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
-	import type { Category } from '$lib/classes/CategoryData';
-	import { Transaction } from '$lib/classes/TransactionData';
+	import type { Category } from '$lib/classes/Category';
+	import { Transaction } from '$lib/classes/Transaction';
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 
