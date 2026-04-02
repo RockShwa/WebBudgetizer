@@ -1,6 +1,6 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
-	import type { Category } from '$lib/classes/Category';
+	import { Category } from '$lib/classes/Category';
 	import { Transaction } from '$lib/classes/Transaction';
 	import { onMount } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
@@ -26,7 +26,8 @@
             body: JSON.stringify({ name: categoryName, goal: 0, defaultGoal: 0, categoryTotal: 0})
         });
 
-        const newCategory = { name: categoryName, goal: 0, defaultGoal: 0, categoryTotal: 0};
+        const newCategory = new Category({name: categoryName, goal: 0, defaultGoal: 0});
+
         categoryData = [...categoryData, newCategory]; 
         categoryName = ''; 
     }

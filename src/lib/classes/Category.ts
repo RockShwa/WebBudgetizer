@@ -6,4 +6,16 @@ export class Category {
     constructor(init: Partial<Category>) {
         Object.assign(this, init)
     }
+
+    getName() {
+        return this.name;
+    }
+
+    getMonthlyGoal() {
+        return this.goal;
+    }
+
+    getDefaultGoal() {
+        return this.defaultGoal;
+    }
 }

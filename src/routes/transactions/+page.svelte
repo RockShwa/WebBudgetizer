@@ -165,7 +165,6 @@
             if (!addedMonths.has(month)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
-                //selectedMonth = opt.textContent;
                 monthSelect?.appendChild(opt);
                 addedMonths.add(month)
             }
@@ -181,7 +180,6 @@
             if (!addedYears.has(year)) {
                 const opt = document.createElement('option');
                 opt.textContent = new Date(t.timestamp).getFullYear().toString();
-                //selectedYear = opt.textContent;
                 yearSelect?.appendChild(opt);
                 addedYears.add(year)
             }
@@ -217,9 +215,9 @@
             })
         })
 
-        transactionData = transactionData?.map(t => {
+        transactionData = transactionData.map(t => {
             if (t.id === transaction.id) {
-                return { ...t, category: categoryName}
+                t.category = categoryName;
             }
             return t;
         }) 

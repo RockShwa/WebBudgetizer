@@ -8,4 +8,24 @@ export class Transaction {
     constructor(init: Partial<Transaction>) {
         Object.assign(this, init)
     }
+
+    getID() {
+        return this.id;
+    }
+
+    getTimestamp() {
+        return this.timestamp;
+    }
+
+    getAmount() {
+        return this.amount;
+    }
+
+    getCategory() {
+        return this.category;
+    }
+
+    getDescription() {
+        return this.description;
+    }
 }
