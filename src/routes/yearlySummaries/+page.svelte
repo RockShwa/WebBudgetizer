@@ -16,86 +16,12 @@
         categoryData: Category[];
     };
 
-    // get class
-
     let categoryData = data.categoryData ?? [];
     let transactionData = data.transactionData ?? [];
 
-
     let selectedCategory = "Out to Eat";
     let selectedMonth = "all";
-    //let canvas: HTMLCanvasElement;
-    // let chartInstance: Chart;
     let selectedYear = "2024";
-
-
-    // export async function graphRegression(categoryName: string) {
-    //     const response = await fetch(`/api/yearlySummaries?name=${categoryName}`);
-    //     const transactions = await response.json();
-
-    //     if (!transactions || transactions.length === 0) {
-    //         if (chartInstance) chartInstance.destroy();
-    //         return;
-    //     }
-
-    //     const formattedData = transactions.map((t: { timestamp: string, amount: number}) => {
-    //         const dateObj = new Date(t.timestamp);
-    //         return {
-    //             x: dateObj.getMonth(),
-    //             y: Math.abs(t.amount)
-    //         }
-    //     });
-
-    //     const regInput = formattedData.map((d: { x: number, y: number})  => [d.x, d.y]);
-
-    //     const reg = regression.linear(regInput);
-
-    //     // create the best fit data (two relevant points) -> start and end
-    //     const startX = regInput[0][0];
-    //     const endX = regInput[regInput.length - 1][0];
-
-    //     const bestFit = [
-    //         { 
-    //             x: startX, 
-    //             y: reg.equation[0] * startX + reg.equation[1] // Calculate y for the first x
-    //         },
-    //         { 
-    //             x: endX, 
-    //             y: reg.equation[0] * endX + reg.equation[1]   // Calculate y for the last x
-    //         }
-    //     ];
-
-    //     if (chartInstance) chartInstance.destroy();
-
-    //     chartInstance = new Chart(canvas, {
-    //         type: 'scatter',
-    //         data: {
-    //             datasets: [
-    //                 {
-    //                     label: "Category Transactions",
-    //                     data: transactions.map((t: { timestamp: string, amount: number}) => ({
-    //                         x: new Date(t.timestamp).getMonth(),
-    //                         y: Math.abs(t.amount)
-    //                     })),
-    //                     backgroundColor: 'blue'
-    //                 },
-    //                 {
-    //                     label: "Line of Best Fit",
-    //                     data: bestFit,
-    //                     type: "line",
-    //                     borderColor: "red"
-    //                 }
-    //             ]
-    //         }
-    //     });
-    // }
-
-    // async function handleCategorySelection() {
-    //     if (selectedCategory) {
-    //         await graphRegression(selectedCategory);
-    //     }   
-        
-    // }
 
     function createYearOptions() {
         const yearSelect = document.getElementById('year-select');

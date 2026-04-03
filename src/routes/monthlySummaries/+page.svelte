@@ -98,10 +98,15 @@
     let currentIncome: number;
     let currentSpendings: number;
 
+    // reactive $: so this block of code executes anytime regressionRes
     $: if (regressionResults && selectedMonth && selectedYear) {
+        // m is the slope. the regression api object (regressionResults) returns the slope at equation[0]
         const m = regressionResults.equation[0];
+        // a is the y-intercept. the regression api object (regressionResults) returns the y-intercept at equation[1]
         const a = regressionResults.equation[1];
 
+        // filter transactions to only include income (amounts > 0)
+        // displayed before pie chart
         currentIncome = transactionData
             .filter(t => {
                 const d = new Date(t.timestamp);
@@ -110,6 +115,8 @@
             })
             .reduce((sum, t) => sum + t.amount, 0);  
             
+        // filter transactions to only include spendings (amount < 0)
+        // displayed before pie chart
         currentSpendings = transactionData
         .filter(t => {
             const d = new Date(t.timestamp);
@@ -118,13 +125,14 @@
         })
         .reduce((sum, t) => sum + t.amount, 0);  
 
+        // minimum savings is 0
         if (a + (m * currentIncome) <= 0) {
             prediction = 0;
+        // MPS equation for calculating savings, displayed before pie chart
         } else {
             prediction = a + (m * currentIncome); 
         }
     }
-    
 </script>
 
 <svelte:head>

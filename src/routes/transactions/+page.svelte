@@ -29,18 +29,15 @@
     }
 
     export function sortTime(transactions: Transaction[]) {
-        
+        // if transsactions less than 1, no need to sort so exit method
         if (transactions.length <= 1) return transactions;
     
         let result: Transaction[]=[];
-
         let left;
         let right;
-        
 
         // recursively slice the arrays in half
         let mid = Math.floor(transactions.length / 2);
-
         left = sortTime(transactions.slice(0, mid));
         right = sortTime(transactions.slice(mid));
 
@@ -49,7 +46,7 @@
         let j: number = 0;
 
         // as long as the indicies are less than right and left's length, 
-        // we're going to set the originial array equal to the left if it's
+        // the originial array is set equal to the left if it's
         // less than the right, and vice versa
 
         while (i < left.length && j < right.length) {
@@ -134,25 +131,32 @@
     }
 
     async function uploadFile(e: Event) {
+        // get file input from the passed event
         const input = e.target as HTMLInputElement;
+        // get the first of the files chosen
         file = input.files?.[0];
 
+        // if it doesn't exist exit method
         if (!file) return;
 
+        // if a csv file isn't chosen, create a pop-up alerting the user and exit method
         if (!file.name.toLowerCase().endsWith(".csv")) {
             alert("Please select a CSV file")
             input.value = "";
             return;
         }
 
+        // attach file in the format of a key value pair (FormData) to the form
         const formData = new FormData();
         formData.append('file', file);
         
+        // send that form to the database for storing in the Transaction table
         await fetch('/api/upload', {
             method: 'POST',
             body: formData
         });
 
+        // reload to ensure upload updates frontend
         location.reload();
     }
 
@@ -228,28 +232,33 @@
     }
 
     function getSuggestedCategory(description: string) {
-            const desc = description.toLowerCase();
-            const scores: Record<string, number> = {};
+        // get description from input and turn to lowercase
+        const desc = description.toLowerCase();
+        // define scores: holds the score for each category. the score represents how much a  
+        // category fits the description based on user history
+        const scores: Record<string, number> = {};
 
-            transactionData.forEach(t => {
-                const historyDesc = t.description.toLowerCase();
+        // for every transaction
+        transactionData.forEach(t => {
+            // get description
+            const historyDesc = t.description.toLowerCase();
 
-                // if historical description is inside the new one or vice versa,
-                // increase the score for that category
+            // if historical description is inside the new one or vice versa,
+            // increase the score for that category
 
-                if (desc.includes(historyDesc) || historyDesc.includes(desc)) {
-                    scores[t.category] = scores[t.category] + 1;
-                }
-            });
+            if (desc.includes(historyDesc) || historyDesc.includes(desc)) {
+                scores[t.category] = scores[t.category] + 1;
+            }
+        });
 
-            // find category with highest score
-            const highest = Object.entries(scores).reduce((max, current) => {
-                return current[1] > max[1] ? current: max});
+        // find category with highest score
+        const highest = Object.entries(scores).reduce((max, current) => {
+            return current[1] > max[1] ? current: max});
 
-            const bestCategory = highest[0];
+        const bestCategory = highest[0];
 
-            return bestCategory;
-        }
+        return bestCategory;
+    }
 
     async function addAmountToCategory(transaction: Transaction, categoryName: string) {
 
@@ -299,6 +308,7 @@
         
         <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
         <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Sort
+            <!-- check the value of the option selected -->
             <select class="select" on:change={(e) => {
                 const value = (e.target as HTMLSelectElement).value;
 
@@ -332,6 +342,7 @@
     <div class="flex flex-row m-3">
         <table class="border-collapse border border-gray-300">
             <thead>
+                <!-- table headings -->
                 <tr class="bg-gray-300">
                     <th class="border border-gray-300 p-1">Timestamp</th>
                     <th class="border border-gray-300 p-1">Amount</th>
@@ -340,11 +351,17 @@
                 </tr>
             </thead>
             <tbody>
+                <!-- table data: creates a row for each transaction -->
                 {#each filteredTransactions as t (t.id)}
                 <tr>
+                    <!-- timestamp -->
                     <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
+                    <!-- amount -->
                     <td class="border border-gray-300 p-1">${t.amount}</td>
-                    <td class="border border-gray-300 p-1 cursor-context-menu" on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}>{t.category}</td>
+                    <!-- category, if right clicked shows a pop-up box to give it a category -->
+                    <td class="border border-gray-300 p-1 cursor-context-menu" on:contextmenu|preventDefault|stopPropagation=
+                    {(e) => handleRightClick(e, t)}>{t.category}</td>
+                    <!-- description -->
                     <td class="border border-gray-300 p-1">{t.description}</td>
                 </tr>
                 {/each}
