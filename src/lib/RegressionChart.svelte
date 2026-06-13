@@ -55,6 +55,10 @@
             { x: 11, y: reg.predict(11)[1] }
         ];
 
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
+
         // create a new chart with all of the above data
         chartInstance = new Chart(canvas, {
             type: 'scatter',
@@ -67,16 +71,38 @@
                             x: new Date(t.timestamp).getMonth(),
                             y: Math.abs(t.amount)
                         })),
-                        backgroundColor: 'blue'
+                        backgroundColor: '#72b0cf'
                     },
                     {
                         // line of best fit
                         label: "Line of Best Fit",
                         data: bestFit,
                         type: "line",
-                        borderColor: "red"
+                        borderColor: "#CF3434"
                     }
                 ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff' // This makes the legend text color white
+                        }
+                    }
+                },
+                scales: {
+                    // Optional: If you also want the axis numbers/labels to be white to match your theme
+                    x: {
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#ffffff'
+                        }
+                    }
+                }
             }
         });
     }

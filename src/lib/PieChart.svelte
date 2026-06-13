@@ -48,8 +48,8 @@
                 datasets: [{
                     data: chartPoints.map(c => c.amount),
                     backgroundColor: [
-                        '#3b82f6',
-                        '#ef4444',
+                        '#72b0cf',
+                        '#CF3434',
                         '#10b981',
                         '#f59e0b',
                         '#8b5cf6',
@@ -59,6 +59,11 @@
             },
             options: {
                 plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff' // This makes the category labels white
+                        }
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(context: TooltipItem<'pie'>): string {

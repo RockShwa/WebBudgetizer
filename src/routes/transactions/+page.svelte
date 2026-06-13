@@ -297,133 +297,156 @@
 <svelte:window on:click={closeMenu} />
 
 <svelte:head>
-    <title>Transactions</title>
+    <title>Transactions | FreeBudgetPro</title>
 </svelte:head>
 
-
-<div class="flex flex-col">
-    <!-- menu div -->
-    <div class="flex m-2">
-        <a href={resolve("/manageCategories")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Manage Categories</a>
+<div class="min-h-screen bg-black text-white p-6 flex flex-col gap-6">
+    
+    <div class="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-zinc-900/40 border border-zinc-800/80 backdrop-blur-md">
         
-        <!-- the sort button that sorts depending on the option with the array of transactions in the database-->
-        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Sort
-            <!-- check the value of the option selected -->
-            <select class="select" on:change={(e) => {
-                const value = (e.target as HTMLSelectElement).value;
+        <div class="flex flex-wrap items-center gap-2">
+            <a href={resolve("/manageCategories")} class="text-xs font-bold tracking-wide uppercase bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-[#72b0cf] text-zinc-200 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95">
+                Manage Categories
+            </a>
+            
+            <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
+                Sort
+                <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer py-1" on:change={(e) => {
+                    const value = (e.target as HTMLSelectElement).value;
+                    if (value === "Timestamp") handleTimeSort();
+                    if (value === "Amount") handleAmountSort();
+                }}>
+                    <option value="Timestamp" class="bg-zinc-950 text-white">Timestamp</option>
+                    <option value="Amount" class="bg-zinc-950 text-white">Amount</option>
+                </select>
+            </label>
 
-                if (value === "Timestamp") handleTimeSort();
-                if (value === "Amount") handleAmountSort();
-            }}>
-                <option value="Timestamp">Timestamp</option>
-                <option value="Amount">Amount</option>
-            </select>
-        </label>
+            <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-[#72b0cf] text-zinc-200 hover:text-white rounded-lg px-4 py-2.5 transition-all cursor-pointer active:scale-95">
+                Upload
+                <input on:change={uploadFile} type="file" id="file" class="hidden"/>
+            </label>
 
-        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1"> Upload
-            <!-- accept=".csv" -->
-            <input on:change={uploadFile} type="file" id="file" class="hidden"/>
-        </label>
+            <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
+                Month
+                <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer py-1" id="month-select" bind:value={selectedMonth}></select>
+            </label>
 
-        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Month
-            <select class="select" id="month-select" bind:value={selectedMonth}></select>
-        </label>
+            <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
+                Year
+                <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer py-1" id="year-select" bind:value={selectedYear}></select>
+            </label>
+        </div>
 
-        <label class="font-bold bg-blue-500 rounded-sm m-0.5 p-1">Year
-            <select class="select" id="year-select" bind:value={selectedYear}>
-            </select>
-        </label>
-
-
-        <a href={resolve("/")} class="font-bold bg-blue-500 rounded-sm m-0.5 p-1 active:scale-95">Back</a>  
+        <a href={resolve("/")} class="text-xs font-bold tracking-wide uppercase bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95">
+            Back
+        </a>  
     </div> 
 
-    <!-- table div -->
-    <div class="flex flex-row m-3">
-        <table class="border-collapse border border-gray-300">
-            <thead>
-                <!-- table headings -->
-                <tr class="bg-gray-300">
-                    <th class="border border-gray-300 p-1">Timestamp</th>
-                    <th class="border border-gray-300 p-1">Amount</th>
-                    <th class="border border-gray-300 p-1">Category</th>
-                    <th class="border border-gray-300 p-1">Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- table data: creates a row for each transaction -->
-                {#each filteredTransactions as t (t.id)}
-                <tr>
-                    <!-- timestamp -->
-                    <td class="border border-gray-300 p-1">{new Date(t.timestamp).toLocaleString()}</td>
-                    <!-- amount -->
-                    <td class="border border-gray-300 p-1">${t.amount}</td>
-                    <!-- category, if right clicked shows a pop-up box to give it a category -->
-                    <td class="border border-gray-300 p-1 cursor-context-menu" on:contextmenu|preventDefault|stopPropagation=
-                    {(e) => handleRightClick(e, t)}>{t.category}</td>
-                    <!-- description -->
-                    <td class="border border-gray-300 p-1">{t.description}</td>
-                </tr>
-                {/each}
-            </tbody>
-        </table>
+    <div class="flex flex-col lg:flex-row gap-6 items-start">
+        
+        <div class="w-full overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/20 backdrop-blur-sm">
+            <table class="w-full border-collapse text-left text-sm">
+                <thead>
+                    <tr class="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-semibold tracking-wider text-xs uppercase">
+                        <th class="p-4">Timestamp</th>
+                        <th class="p-4">Amount</th>
+                        <th class="p-4">Category</th>
+                        <th class="p-4">Description</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-900">
+                    {#each filteredTransactions as t (t.id)}
+                    <tr class="hover:bg-zinc-900/40 transition-colors duration-150 group">
+                        <td class="p-4 text-zinc-400 font-mono text-xs">{new Date(t.timestamp).toLocaleString()}</td>
+                        
+                        <td class="p-4 text-white font-semibold">${t.amount}</td>
+                        
+                        <td class="p-4 text-[#72b0cf] font-medium cursor-context-menu relative hover:underline decoration-dotted" 
+                            on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}>
+                            {t.category || "Uncategorized"}
+                        </td>
+                        
+                        <td class="p-4 text-zinc-400 group-hover:text-zinc-200 transition-colors">{t.description}</td>
+                    </tr>
+                    {/each}
+                </tbody>
+            </table>
+        </div>
 
-        <div class="m-5 font-bold bg-blue-500 rounded-sm p-3">
-            <p>Please Right</p>
-            <p>Click a Category</p>
-            <p>Cell to Change It</p>
+        <div class="w-full lg:w-64 shrink-0 bg-zinc-900/30 border-l-2 border-[#72b0cf] p-4 rounded-r-xl text-xs text-zinc-400 flex flex-col gap-1 leading-relaxed">
+            <span class="font-bold text-white uppercase tracking-wider mb-1 block">Quick Tip</span>
+            <p>Right-click any entry within the <span class="text-[#72b0cf] font-semibold">Category</span> column to change or apply a category.</p>
         </div>
     </div>
 </div>
 
-<!-- right click menu for setting categories (redo styling) -->
 {#if showMenu} 
     {@const suggested = selectedTransaction ? getSuggestedCategory(selectedTransaction.description) : null}
 
     <div 
-        class="fixed z-100 bg-white shadow-2xl border border-gray-300 rounded-lg py-2 w-48 flex flex-col"
+        class="fixed z-50 bg-zinc-950/95 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-zinc-800/80 rounded-xl py-2 w-52 flex flex-col backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100"
         style="top: {pos.y}px; left: {pos.x}px;">
 
         {#if suggested}
-            <div class="px-4 py-2 text-xs font-bold text-gray-400 uppercase border-b mb-1">
+            <div class="px-4 py-1.5 text-[10px] font-black tracking-widest text-[#72b0cf] uppercase border-b border-zinc-900 mb-1">
                 Suggested
             </div>
-            <button class="w-full text-left px-4 py-2" on:click|stopPropagation={() => {
+            <button class="w-full text-left px-4 py-2 text-sm text-zinc-200 font-medium hover:bg-[#72b0cf]/10 hover:text-[#72b0cf] transition-colors" on:click|stopPropagation={() => {
                 if (selectedTransaction) updateTransactionCategory(selectedTransaction, suggested) 
             }}>
                 {suggested}
             </button>
+            <div class="h-px bg-zinc-900 my-1"></div>
         {/if}
 
-        <div class="max-h-60 overflow-y-auto"> 
+        <div class="max-h-60 overflow-y-auto custom-scrollbar"> 
             {#each categoryData.filter(c => c.name !== suggested) as c (c.name)} 
                 <button 
                     type="button"
-                    class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+                    class="w-full text-left px-4 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-white text-sm transition-colors"
                     on:click|stopPropagation={() => { if (selectedTransaction) {
-                                                        updateTransactionCategory(selectedTransaction, c.name);
-                                                    }}}
+                        updateTransactionCategory(selectedTransaction, c.name);
+                    }}}
                 >
                     {c.name}
                 </button>
             {/each}
         </div>    
-               
-        <!-- even if you have to click uncategorized a bunch, since it's not part of category data it will stay at the bottom! -->
-        <button type="button" class="w-full text-left px-4 py-2 hover:bg-blue-600 hover:text-white text-sm transition-colors"
+                
+        <div class="h-px bg-zinc-900 my-1"></div>
+
+        <button type="button" class="w-full text-left px-4 py-2 text-zinc-500 hover:bg-red-950/30 hover:text-red-400 text-sm transition-colors font-medium"
         on:click|stopPropagation={() => { if (selectedTransaction) {
-                                                    updateTransactionCategory(selectedTransaction, "");
-                                                }}}>
-            Uncategorized
+                    updateTransactionCategory(selectedTransaction, "");
+                }}}>
+            Clear Category
         </button>
     </div>
 {/if}    
 
 <style>
-    tr:nth-child(even) {
-        background-color: white;
+    /* 1. Force the browser's native engine into dark mode for form controls */
+    select {
+        color-scheme: dark;
     }
-    tr:nth-child(odd) {
-        background-color: var(--color-gray-300);
+
+    /* 2. Tell Svelte NOT to delete this rule using the :global modifier */
+    :global(select option) {
+        background-color: #09090b !important; /* Forces pitch-black background */
+        color: #ffffff !important;            /* Forces crisp white text */
+    }
+    /* Clean custom scrollbar for long category overlays */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #27272a;
+        border-radius: 2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #72b0cf;
     }
 </style>
