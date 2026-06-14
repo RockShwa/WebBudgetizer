@@ -27,11 +27,12 @@ export async function POST({request}) {
 
     const slicedCSV = text.slice(startI);
 
-
-    const records: TransactionRow[] = parse(slicedCSV, {
+    const records = (parse(slicedCSV, {
         columns: true,
+        relax_quotes: true,
         skip_empty_lines: true
-    });
+    }) as TransactionRow[])
+    .filter(row => !row.Description.includes("Beginning balance as"));
 
     for (const row of records) {
         await sql.query`
@@ -40,12 +41,5 @@ export async function POST({request}) {
         `;
     }
 
-    return json({success: true});
-
-    // click on a category
-    // get available categories
-    // select a category
-    // update the database
-    // update the website
-    
+    return json({success: true});   
 }

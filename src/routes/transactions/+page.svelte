@@ -4,6 +4,7 @@
     import { onMount } from 'svelte';
 	import type { Transaction } from '$lib/classes/Transaction';
 	import type { Category } from '$lib/classes/Category';
+    import { invalidateAll } from '$app/navigation';
 
     export let data: { 
         transactionData: Transaction[];
@@ -21,8 +22,62 @@
 
     let file: File | undefined;
 
-    let selectedMonth = "July";
-    let selectedYear = "2024";
+    let selectedMonth = "";
+    let selectedYear = "";
+
+    let activeNoteTransactionId: number | null = null;
+
+    let initialized = false;
+
+    $: {
+        if (!initialized && transactionData.length > 0) {
+            const latestTransaction = transactionData.reduce((latest, current) => {
+                return new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest;
+            });
+
+            const latestDate = new Date(latestTransaction.timestamp);
+
+            selectedMonth = monthNames[latestDate.getMonth()];
+            selectedYear = latestDate.getFullYear().toString();
+
+            initialized = true;
+        }
+    }
+    
+    function getMenuPosition(x: number, y: number) {
+        const menuWidth = 208;  // w-52
+        const menuHeight = 260; // approximate height
+
+        const padding = 14;
+
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = x;
+        let top = y;
+
+        // prevent right overflow
+        if (left + menuWidth > viewportWidth) {
+            left = viewportWidth - menuWidth - padding;
+        }
+
+        // prevent bottom overflow → flip upward
+        if (top + menuHeight > viewportHeight) {
+            top = y - menuHeight;
+        }
+
+        // clamp top
+        if (top < padding) {
+            top = padding;
+        }
+
+        // clamp left
+        if (left < padding) {
+            left = padding;
+        }
+
+        return { left, top };
+    }
 
     export function navigateBack() {
         history.go(-1);
@@ -157,7 +212,7 @@
         });
 
         // reload to ensure upload updates frontend
-        location.reload();
+        await invalidateAll();
     }
 
     function createMonthOptions() {
@@ -198,15 +253,37 @@
 
         selectedTransaction = transaction;
 
-        pos = {x: e.clientX, y: e.clientY};
+        const p = getMenuPosition(e.clientX, e.clientY);
+        pos = { x: p.left, y: p.top };
         showMenu = true;
+        activeNoteTransactionId = null;
     }
 
     function closeMenu() {
         showMenu = false;
+        activeNoteTransactionId = null;
+    }
+
+    function toggleNote(transactionId: number, e: MouseEvent) {
+        e.stopPropagation();
+
+        activeNoteTransactionId =
+            activeNoteTransactionId === transactionId
+                ? null
+                : transactionId;
+
+        showMenu = false;
     }
 
     async function updateTransactionCategory(transaction: Transaction, categoryName: string) {
+        // If the incoming categoryName doesn't already contain a comma,
+        // check if the old category string had a note we should preserve.
+        let finalCategory = categoryName;
+        if (transaction.category && transaction.category.includes(',') && !categoryName.includes(',')) {
+            const oldNote = transaction.category.split(',')[1].trim();
+            // If changing to empty string, clear everything; otherwise attach the old note to the new category name
+            finalCategory = categoryName ? `${categoryName}, ${oldNote}` : "";
+        }
 
         await fetch ('/api/transactions', {
             method: 'PATCH', 
@@ -214,21 +291,23 @@
             body: JSON.stringify({ 
                 action: 'UPDATE_CATEGORY_NAME',
                 id: transaction.id, 
-                category: categoryName,
+                category: finalCategory, // Send the appended string to the backend
                 amount: transaction.amount
             })
         })
 
         transactionData = transactionData.map(t => {
             if (t.id === transaction.id) {
-                t.category = categoryName;
+                t.category = finalCategory;
             }
             return t;
         }) 
 
         closeMenu();
 
-        addAmountToCategory(transaction, categoryName);
+        // Pass just the clean name to the total calculator so it doesn't break your metrics
+        const cleanName = finalCategory.split(',')[0].trim();
+        addAmountToCategory(transaction, cleanName);
     }
 
     function getSuggestedCategory(description: string) {
@@ -247,7 +326,8 @@
             // increase the score for that category
 
             if (desc.includes(historyDesc) || historyDesc.includes(desc)) {
-                scores[t.category] = scores[t.category] + 1;
+                const rootCategory = t.category ? t.category.split(',')[0].trim() : "Uncategorized";
+                scores[rootCategory] = (scores[rootCategory] || 0) + 1;
             }
         });
 
@@ -255,9 +335,7 @@
         const highest = Object.entries(scores).reduce((max, current) => {
             return current[1] > max[1] ? current: max});
 
-        const bestCategory = highest[0];
-
-        return bestCategory;
+        return highest[0].split(',')[0].trim();
     }
 
     async function addAmountToCategory(transaction: Transaction, categoryName: string) {
@@ -361,9 +439,54 @@
                         
                         <td class="p-4 text-white font-semibold">${t.amount}</td>
                         
-                        <td class="p-4 text-[#72b0cf] font-medium cursor-context-menu relative hover:underline decoration-dotted" 
+                        <td class="p-4 text-[#72b0cf] font-medium relative hover:underline decoration-dotted group/cat"
+                            on:click|stopPropagation={(e) => toggleNote(t.id, e)}
                             on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}>
-                            {t.category || "Uncategorized"}
+                            <div class="flex items-center gap-1">
+                                <span class="hover:underline decoration-dotted">
+                                    {t.category ? t.category.split(',')[0].trim() : "Uncategorized"}
+                                </span>
+
+                                {#if t.category && t.category.includes(',')}
+                                    <span class="text-[10px] text-zinc-500 font-mono">📝</span>
+                                {/if}
+                            </div>
+
+                            {#if activeNoteTransactionId === t.id}
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 flex flex-col z-30 w-56 p-3 bg-zinc-950 border border-zinc-800 text-zinc-300 rounded-xl shadow-2xl gap-2">
+                                    <div class="font-bold text-white text-xs border-b border-zinc-900 pb-1 flex justify-between items-center">
+                                        <span>Category Note</span>
+                                        <span class="text-[10px] font-normal text-zinc-500">Press Enter to save</span>
+                                    </div>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Add a note..."
+                                        value={t.category && t.category.includes(',') ? t.category.split(',')[1].trim() : ''}
+                                        class="w-full bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs text-white outline-none focus:border-[#72b0cf] transition-colors"
+                                        on:click|stopPropagation
+                                        on:keydown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                const input = e.target as HTMLInputElement;
+                                                const catName = t.category
+                                                    ? t.category.split(',')[0].trim()
+                                                    : "Uncategorized";
+
+                                                const newNote = input.value.trim();
+
+                                                const updatedValue = newNote
+                                                    ? `${catName}, ${newNote}`
+                                                    : catName;
+
+                                                updateTransactionCategory(t, updatedValue);
+                                                input.blur();
+                                            }
+                                        }}
+                                    />
+
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-zinc-950"></div>
+                                </div>
+                            {/if}
                         </td>
                         
                         <td class="p-4 text-zinc-400 group-hover:text-zinc-200 transition-colors">{t.description}</td>
@@ -376,6 +499,7 @@
         <div class="w-full lg:w-64 shrink-0 bg-zinc-900/30 border-l-2 border-[#72b0cf] p-4 rounded-r-xl text-xs text-zinc-400 flex flex-col gap-1 leading-relaxed">
             <span class="font-bold text-white uppercase tracking-wider mb-1 block">Quick Tip</span>
             <p>Right-click any entry within the <span class="text-[#72b0cf] font-semibold">Category</span> column to change or apply a category.</p>
+            <p>Left-click any entry within the <span class="text-[#72b0cf] font-semibold">Category</span> column to add a note to a transaction.</p>
         </div>
     </div>
 </div>
@@ -405,10 +529,11 @@
                     type="button"
                     class="w-full text-left px-4 py-2 text-zinc-300 hover:bg-zinc-900 hover:text-white text-sm transition-colors"
                     on:click|stopPropagation={() => { if (selectedTransaction) {
-                        updateTransactionCategory(selectedTransaction, c.name);
+                        const cleanCategoryName = c.name.split(',')[0].trim();
+                        updateTransactionCategory(selectedTransaction, cleanCategoryName);
                     }}}
                 >
-                    {c.name}
+                    {c.name.split(',')[0].trim()}
                 </button>
             {/each}
         </div>    
