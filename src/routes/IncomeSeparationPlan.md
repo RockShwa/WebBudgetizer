@@ -8,7 +8,7 @@ So the categories I want are
 3. Savings for others
 4. Donation
 
-So I want a view that takes everyhting categorized as income, and for each transaction amount I want it to be distributed according to the set percentages
+So I want a view that takes everything categorized as income, and for each transaction amount I want it to be distributed according to the set percentages
 
 However, I should be able to group income and then it would distribute that group based on the sum, not the individual transactions
 
@@ -38,3 +38,4 @@ SO in summary:
 
 Future features:
 1. allow the user to create categories instead of having them harcoded, and they can choose which account it can go under
+2. Combine Yearly and Monthly Summaries Page lol
