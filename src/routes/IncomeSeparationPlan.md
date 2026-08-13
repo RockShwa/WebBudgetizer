@@ -10,8 +10,6 @@ So the categories I want are
 
 So I want a view that takes everything categorized as income, and for each transaction amount I want it to be distributed according to the set percentages
 
-However, I should be able to group income and then it would distribute that group based on the sum, not the individual transactions
-
 The way I want it to be viewed is probably within Manage Categories, there should be a manage Income button. As a later quality of life adjustment, consider removing income from the list of category goals
 
 Inside this manage income button would be a record of all income transactions to date (pulled from transactions with the category income). It will be viewed by month, year. To the side of this would be the 4 categories. I should be able to see a running total of the amount I have in my checking and savings account, then underneath checking I should have spendings for myself ONLY. Underneath savings I should have personal savings and savings for others in two seperate categories. Every time income is added, it will add to these amounts. Donation will be linked to each income transaction because it does not compound over time. There will be a check box next to each transactions that I can click to say that I have donated it or not. 
