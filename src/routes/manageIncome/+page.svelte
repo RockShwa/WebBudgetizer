@@ -4,6 +4,8 @@
     import type { Category } from '$lib/classes/Category';
     import type { Percentage } from '$lib/classes/Percentage';
     import { invalidateAll } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 
     export let data: { 
         transactionData: Transaction[];
@@ -16,6 +18,14 @@
     let selfSpending: number = 0;
     let shortTermSavings: number = 0;
     let savingsOthers: number = 0;
+
+    let selectedMonth = "";
+    let selectedYear = "";
+
+    onMount(() => {
+        createMonthOptions();
+        createYearOptions();
+    });
 
     $: selfSpendingPercentage = Number(percentageData.find(p => p.category === "Self Spending")?.percentage);
     $: shortTermSavingsPercentage = Number(percentageData.find(p => p.category === "Short Term Savings")?.percentage);
@@ -33,11 +43,6 @@
 
     $: transactionData = data.transactionData ?? [];
     let positiveTransactions: Transaction[] = [];
-
-    // CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT
-    $: positiveTransactions = transactionData.filter(
-        (transaction) => transaction.amount > 0
-    );
 
     $: {
         // reset so we dont double count when smth changes
@@ -64,6 +69,54 @@
             }
         }
     }
+
+    function createMonthOptions() {
+        const monthSelect = document.getElementById('month-select');
+        const addedMonths = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const month = new Date(t.timestamp).getMonth(); 
+            if (!addedMonths.has(month)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).toLocaleString('default', {month: 'long'});
+                monthSelect?.appendChild(opt);
+                addedMonths.add(month)
+            }
+        }
+    }
+
+    function createYearOptions() {
+        const yearSelect = document.getElementById('year-select');
+        const addedYears = new SvelteSet<number>(); // track months added
+
+        for (const t of transactionData) {
+            const year = new Date(t.timestamp).getFullYear(); 
+            if (!addedYears.has(year)) {
+                const opt = document.createElement('option');
+                opt.textContent = new Date(t.timestamp).getFullYear().toString();
+                yearSelect?.appendChild(opt);
+                addedYears.add(year)
+            }
+        }
+    }
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+    $: filteredTransactions = transactionData.filter((t: Transaction) => {
+            if (!t.timestamp) return false;
+        
+            const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
+            const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
+            return isCorrectYear && isCorrectMonth;
+    });  
+
+    // CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT
+    $: positiveTransactions = filteredTransactions.filter(
+        (transaction) => transaction.amount > 0
+    );
 
     async function handleEditedPercentage(action: string, categoryName: string, event: Event) {
         const element = event.target as HTMLElement;
@@ -107,11 +160,57 @@
             });
         }
     }
+
+    let showMenu = false;
+    let pos = { x: -9999, y: -9999 };
+    let selectedTransaction: Transaction | null = null;
+    let menuEl: HTMLDivElement;
+
+    function handleRightClick(e: MouseEvent, t: Transaction) {
+        
+        showMenu = true;
+        selectedTransaction = t;
+
+        if (menuEl) {
+            const { width, height } = menuEl.getBoundingClientRect();
+            pos = getMenuPosition(e.clientX, e.clientY, width, height);
+        }
+    }
+
+    function getMenuPosition(x: number, y: number, menuWidth: number, menuHeight: number) {
+        const padding = 14;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = x;
+        let top = y;
+
+        if (left + menuWidth > viewportWidth) {
+            left = viewportWidth - menuWidth - padding;
+        }
+        if (top + menuHeight > viewportHeight) {
+            top = y - menuHeight;
+        }
+        if (top < padding) top = padding;
+        if (left < padding) left = padding;
+
+        return { x: left, y: top };
+    }
+
+    function handleWindowClick() {
+        if (showMenu) {
+            showMenu = false;
+            selectedTransaction = null;
+        }
+    }
+
 </script>
 
 <svelte:head>
     <title>Manage Income | FreeBudgetPro</title>
 </svelte:head>
+
+<svelte:window on:click={handleWindowClick} on:scroll={handleWindowClick}/>
 
 <main class="min-h-screen bg-black text-white p-6 flex flex-col gap-6">
 
@@ -260,13 +359,30 @@
         <!-- Transactions -->
         <div class="w-full overflow-x-auto rounded-xl border border-zinc-800 bg-zinc-900/20 backdrop-blur-sm">
 
-            <div class="p-4 border-b border-zinc-800 bg-zinc-900/40">
-                <h2 class="text-xs font-bold tracking-widest uppercase text-zinc-400">
-                    Income Transactions
-                </h2>
-                <p class="text-xs text-zinc-600 mt-1">
-                    Positive transactions included in income allocation
-                </p>
+            <div class="p-4 border-b border-zinc-800 bg-zinc-900/40 flex flex-wrap items-center justify-between gap-4">
+
+                <div>
+                    <h2 class="text-xs font-bold tracking-widest uppercase text-zinc-400">
+                        Income Statements
+                    </h2>
+                    <p class="text-xs text-zinc-600 mt-1">
+                        Positive transactions included in income allocation
+                    </p>
+                </div>
+
+                <!-- month and year stuff -->
+                <div class="flex items-center gap-3">
+                    <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
+                        Month
+                        <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer" id="month-select" bind:value={selectedMonth}></select>
+                    </label>
+
+                    <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
+                        Year
+                        <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer" id="year-select" bind:value={selectedYear}></select>
+                    </label>
+                </div>
+
             </div>
 
             <table class="w-full border-collapse text-left text-sm">
@@ -276,11 +392,6 @@
                         <th class="p-4">Amount</th>
                         <th class="p-4">Description</th>
                         <th class="p-4">Donated?</th>
-                        <!-- donated
-                         1. when check box clicked, send that to the lovely database (ew) 
-                         2. add right click box with percentage of income to be donated & invested long term
-                         3. add percentage boxes & patch updates for donation and long term investment 
-                         -->
                     </tr>
                 </thead>
 
@@ -292,7 +403,9 @@
                             {new Date(t.timestamp).toLocaleString()}
                         </td>
                         
-                        <td class="p-4 text-white font-semibold">
+                        <td class="p-4 text-white font-semibold"
+                            on:contextmenu|preventDefault|stopPropagation={(e) => handleRightClick(e, t)}
+                        >
                             ${t.amount}
                         </td>
                         
@@ -300,7 +413,6 @@
                             {t.description}
                         </td>
 
-                        <!-- TODO: Handle donation check here -->
                         <td class="p-4 text-zinc-400 group-hover:text-zinc-200 transition-colors">
                             <input 
                                 type="checkbox" 
@@ -332,11 +444,10 @@
             </p>
 
             <p>
-                Only
-                <span class="text-[#72b0cf] font-semibold">positive transactions</span>
-                are currently included in the income allocation.
+                <span class="text-[#72b0cf] font-semibold">Right click</span>
+                on an income statement's <span class="text-[#72b0cf] font-semibold">amount</span> to see the portion of it needed to be donated and invested in the long term
             </p>
-
+ 
         </div>
 
     </div>
@@ -439,6 +550,35 @@
         </div>
 
     </div>
+
+    {#if showMenu && selectedTransaction != null} 
+        <div
+            bind:this={menuEl}
+            class="fixed z-50 bg-zinc-950/95 shadow-[0_10px_30px_rgba(0,0,0,0.8)] border border-zinc-800/80 rounded-xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100 w-52 overflow-hidden"
+            style="top: {pos.y}px; left: {pos.x}px;"
+        >
+            <div class="p-3 border-b border-zinc-800 bg-zinc-900/50">
+                <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                    Donation & Long Term Savings
+                </span>
+            </div>
+
+            <div class="p-3 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-zinc-400">Donation</span>
+                    <span class="text-xs font-semibold text-[#72b0cf] font-mono">
+                        ${(selectedTransaction.amount * donationsPercentage / 100).toFixed(2)}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-zinc-400">Long Term Savings</span>
+                    <span class="text-xs font-semibold text-[#72b0cf] font-mono">
+                        ${(selectedTransaction.amount * longTermSavingsPercentage / 100).toFixed(2)}
+                    </span>
+                </div>
+            </div>
+        </div>
+    {/if}    
 
 </main>
 
