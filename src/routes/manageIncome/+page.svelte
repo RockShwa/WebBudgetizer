@@ -57,11 +57,11 @@
         }
     }
 
-    // eventually I need to make a settings option where the user can select what categories they want to be a part of which income categrory
     $: {
         checkingBalance = 0;
         // for each transaction, I want to look at the category and then determine which income category it subtracts from
         for (const transaction of transactionData) {
+            // iterate through each category: if includesWithChecking is checked, add to checkingBalance. If savings checked, add to savingsBalance
             if (!transaction.category.startsWith("Gift") && !transaction.category.startsWith("Income") && !transaction.category.startsWith("Savings")) {
                 checkingBalance = checkingBalance + transaction.amount;
             } else if (transaction.category.startsWith("Gift")) {
@@ -219,19 +219,28 @@
 
         <div>
             <h1 class="text-2xl font-bold text-white">
-                Manage Income
+                Manage <span class="text-[#72b0cf] font-bold">Income</span>
             </h1>
             <p class="text-xs text-zinc-500 mt-1">
                 Manage your income allocation and account balances
             </p>
         </div>
 
-        <a
-            href={resolve("/")}
-            class="text-xs font-bold tracking-wide uppercase bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95"
-        >
-            Back
-        </a>
+        <div class="flex gap-2">
+            <a
+                href={resolve("/settings")}
+                class="text-xs font-bold tracking-wide uppercase bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95"
+            >
+                Settings
+            </a>
+
+            <a
+                href={resolve("/")}
+                class="text-xs font-bold tracking-wide uppercase bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95"
+            >
+                Back
+            </a>
+        </div>
 
     </div>
 
