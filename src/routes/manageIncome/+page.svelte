@@ -1,43 +1,89 @@
 <script lang="ts">
-    //import { resolve } from '$app/paths';
+    import { resolve } from '$app/paths';
 	import type { Transaction } from '$lib/classes/Transaction';
 	import type { Category } from '$lib/classes/Category';
+    import type { Percentage } from '$lib/classes/Percentage';
+    import { invalidateAll } from '$app/navigation';
+
+    export let data: { 
+        transactionData: Transaction[];
+        categoryData: Category[];
+        percentageData: Percentage[];
+    };
+
+    $: percentageData = data.percentageData ?? [];
 
     let selfSpending: number = 0;
     let shortTermSavings: number = 0;
     let savingsOthers: number = 0;
 
-    let selfSpendingPercentage = 10;
-    let shortTermSavingsPercentage = 10;
-    let savingsOthersPercentage = 30;
+    $: selfSpendingPercentage = Number(percentageData.find(p => p.category === "Self Spending")?.percentage);
+    $: shortTermSavingsPercentage = Number(percentageData.find(p => p.category === "Short Term Savings")?.percentage);
+    $: savingsOthersPercentage = Number(percentageData.find(p => p.category === "Savings for Others")?.percentage);
+
     // TODO this should be displayed if I right click on an income amount (should be an instructions box somewhere)
     // let donationsPercentage = 30;
     // let longTermSavingsPercentage = 20;
 
-    let startingCheckingBalance = 0;
-    let startingSavingsBalance = 0;
+    // let startingCheckingBalance = 0;
+    // let startingSavingsBalance = 0;
 
-    export let data: { 
-        transactionData: Transaction[];
-        categoryData: Category[];
-    };
+    let checkingBalance = 0;
 
     $: transactionData = data.transactionData ?? [];
     let positiveTransactions: Transaction[] = [];
 
+    // CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT
     $: positiveTransactions = transactionData.filter(
         (transaction) => transaction.amount > 0
     );
 
-    $: for (const transaction of positiveTransactions) {
-        selfSpending = selfSpending + transaction.amount * (selfSpendingPercentage / 100);
-        shortTermSavings = selfSpending + transaction.amount * (shortTermSavingsPercentage / 100);
-        savingsOthers = selfSpending + transaction.amount * (savingsOthersPercentage / 100);
+    $: {
+        // reset so we dont double count when smth changes
+        selfSpending = 0;
+        shortTermSavings = 0;
+        savingsOthers = 0;
+
+        for (const transaction of positiveTransactions) {
+            selfSpending = selfSpending + transaction.amount * (selfSpendingPercentage / 100);
+            shortTermSavings = shortTermSavings + transaction.amount * (shortTermSavingsPercentage / 100);
+            savingsOthers = savingsOthers + transaction.amount * (savingsOthersPercentage / 100);
+        }
     }
 
-    // function handleEditedPercentage() {
-        // REMEMBER TO SAVE PERCENTAGE IN DATABASE
-    // }
+    // eventually I need to make a settings option where the user can select what categories they want to be a part of which income categrory
+    $: {
+        checkingBalance = 0;
+        // for each transaction, I want to look at the category and then determine which income category it subtracts from
+        // save to database
+        for (const transaction of transactionData) {
+            if (!transaction.category.startsWith("Gift") && !transaction.category.startsWith("Income") && !transaction.category.startsWith("Savings")) {
+                checkingBalance = checkingBalance + transaction.amount;
+            } else if (transaction.category.startsWith("Gift")) {
+                savingsOthers = savingsOthers + transaction.amount;
+            }
+        }
+    }
+
+    async function handleEditedPercentage(action: string, categoryName: string, event: Event) {
+        const element = event.target as HTMLElement;
+        const newPercentage = Number(element.innerText);
+
+        if (action === 'UPDATE_PERCENTAGES') {
+            // query database with input
+            await fetch('/api/manageIncome', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'UPDATE_PERCENTAGES',
+                    incomeCategory: categoryName,
+                    percentage: newPercentage
+                })
+            });
+        }
+
+        await invalidateAll();
+    }
 </script>
 
 <svelte:head>
@@ -59,6 +105,7 @@
                     contenteditable="true" 
                     id="editor" 
                     class="bg-zinc-950/40 border border-zinc-800/60 focus:border-[#72b0cf] focus:bg-zinc-900 rounded px-2 py-1 outline-none font-mono text-zinc-300 focus:text-white transition-all cursor-text inline-block min-w-[60px]"
+                    on:blur={(e) => handleEditedPercentage('UPDATE_PERCENTAGES', "Self Spending", e)}
                     >
                     {selfSpendingPercentage}
                 </div>
@@ -66,7 +113,7 @@
             </div>
             
             <div>
-                Self Spending:
+                Short Term Savings:
                 <div 
                     contenteditable="true" 
                     id="editor" 
@@ -78,7 +125,7 @@
             </div>
 
             <div>
-                Self Spending:
+                Savings for Others:
                 <div 
                     contenteditable="true" 
                     id="editor" 
@@ -122,7 +169,8 @@
         Checking Account
 
         <div>
-            Total Balance: {(startingCheckingBalance + selfSpending).toFixed(2)}
+        <!-- This should work because checkingBalance sums up everything supposed to go into checking EXCEPT income so we add income here -->
+            Total Balance: {(checkingBalance + selfSpending).toFixed(2)}
         </div>
 
         <div>
@@ -136,7 +184,8 @@
         Savings Account
 
         <div>
-            Total Balance: {(startingSavingsBalance + shortTermSavings + savingsOthers).toFixed(2)}
+        <!-- Here though, when I add a gift, I want it to subtract from savingsOthers so we add shortTermSavings and savingsOthers for the total -->
+            Total Balance: {(shortTermSavings + savingsOthers).toFixed(2)}
         </div>
 
         <div>
@@ -147,5 +196,9 @@
             Savings for Others: {savingsOthers.toFixed(2)}
         </div>
    </div>
+
+   <a href={resolve("/")} class="text-xs font-bold tracking-wide uppercase bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white rounded-lg px-4 py-2.5 transition-all active:scale-95">
+        Back
+    </a>
 
 </main>
