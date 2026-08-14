@@ -28,11 +28,12 @@ SO in summary:
     - Automatically funnels the appropriate percentages of income to each category when a new income transaction is added - DONE
     - Allows me to change the percentage funneled - DONE
     - Savings and checking accounts are automatically updated through specific transactions - DONE
+    - Save income category percetanges to database - DONE
     - The user can set a "starting" checking/savings account balance if they want to disregard previous transactions (put in settings menu)
-    - Save all amounts, income category percetanges and donation selection to database
     - Settings menu to select what categories get added to which income category
     - CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT (in pos transactions)
     - Some way to store whether I donated what I needed to from an income transaction 
+    - Month and year filters for the income statements
 2. A Saving Goals page
     - Displays & allows the user to enter saving goals
 
