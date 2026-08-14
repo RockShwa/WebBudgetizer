@@ -15,6 +15,8 @@
 
     $: percentageData = data.percentageData ?? [];
 
+    $: categoryData = data.categoryData ?? [];
+
     let selfSpending: number = 0;
     let shortTermSavings: number = 0;
     let savingsOthers: number = 0;
@@ -61,6 +63,17 @@
         checkingBalance = 0;
         // for each transaction, I want to look at the category and then determine which income category it subtracts from
         for (const transaction of transactionData) {
+
+            for (const category of categoryData) {
+                if (transaction.category.startsWith(category.name)) {
+                    if (category.includedInChecking) {
+                        checkingBalance = checkingBalance + transaction.amount;
+                    } else if (cateegory.includedInSavings) {
+                        savingsOthers = savingsOthers + transaction.amount;
+                    }
+                }
+            }
+
             // iterate through each category: if includesWithChecking is checked, add to checkingBalance. If savings checked, add to savingsBalance
             if (!transaction.category.startsWith("Gift") && !transaction.category.startsWith("Income") && !transaction.category.startsWith("Savings")) {
                 checkingBalance = checkingBalance + transaction.amount;
