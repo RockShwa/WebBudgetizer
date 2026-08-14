@@ -3,7 +3,7 @@ import sql from "mssql"
 import { config } from '$lib/server/db.js';
 
 export async function PATCH({ request }) {
-    const { action, incomeCategory, percentage, startingChecking, startingSavings } = await request.json();
+    const { action, incomeCategory, percentage, startingChecking, startingSavings, transactionID, isDonated } = await request.json();
 
     await sql.connect(config);
 
@@ -24,7 +24,13 @@ export async function PATCH({ request }) {
             UPDATE Settings
             SET startingSavings = ${startingSavings}
             WHERE id = 1`;
-    }          
+    }   
+    if (action === 'UPDATE_DONATION') {
+        await sql.query`
+            UPDATE Transactions
+            SET donated = ${isDonated}
+            WHERE id = ${transactionID}`;
+    }           
 
     return json({ success: true });
 }

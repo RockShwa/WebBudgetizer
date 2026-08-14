@@ -22,8 +22,9 @@
     $: savingsOthersPercentage = Number(percentageData.find(p => p.category === "Savings for Others")?.percentage);
 
     // TODO this should be displayed if I right click on an income amount (should be an instructions box somewhere)
-    // let donationsPercentage = 30;
-    // let longTermSavingsPercentage = 20;
+    $: donationsPercentage = Number(percentageData.find(p => p.category === "Donation")?.percentage);;
+    $: longTermSavingsPercentage = Number(percentageData.find(p => p.category === "Long Term Savings")?.percentage);;
+
 
     // let startingCheckingBalance = 0;
     // let startingSavingsBalance = 0;
@@ -83,6 +84,29 @@
 
         await invalidateAll();
     }
+
+    async function handleDonationCheckChange(action: string, event: Event, id: number) {
+        let bitDonated = Number(transactionData.find(t => t.id === id)?.donated)
+
+        if (bitDonated === 0) {
+            bitDonated = 1;
+        } else {
+            bitDonated = 0;
+        }
+        
+        if (action === 'UPDATE_DONATION') {
+            // query database with input
+            await fetch('/api/manageIncome', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'UPDATE_DONATION',
+                    transactionID: id,
+                    isDonated: bitDonated
+                })
+            });
+        }
+    }
 </script>
 
 <svelte:head>
@@ -121,7 +145,7 @@
                     Income Percentages
                 </h2>
                 <p class="text-xs text-zinc-600 mt-1">
-                    Choose how positive income is distributed
+                    Choose how income is distributed
                 </p>
             </div>
         </div>
@@ -188,6 +212,45 @@
                 </div>
             </div>
 
+            <!-- Donation -->
+            <div class="p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/80">
+                <div class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                    Donation
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div 
+                        contenteditable="true" 
+                        id="editor" 
+                        class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-[#72b0cf] focus:bg-zinc-900 rounded-lg px-3 py-2 outline-none font-mono text-zinc-300 focus:text-white transition-all cursor-text min-w-[70px] text-lg font-semibold"
+                        on:blur={(e) => handleEditedPercentage('UPDATE_PERCENTAGES', "Donation", e)}
+                    >
+                        {donationsPercentage}
+                    </div>
+
+                    <span class="text-zinc-500 font-mono">%</span>
+                </div>
+            </div>
+
+            <!-- Long Term Savings -->
+            <div class="p-4 rounded-xl bg-zinc-950/50 border border-zinc-800/80">
+                <div class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                    Long Term Savings
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div 
+                        contenteditable="true" 
+                        id="editor" 
+                        class="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 focus:border-[#72b0cf] focus:bg-zinc-900 rounded-lg px-3 py-2 outline-none font-mono text-zinc-300 focus:text-white transition-all cursor-text min-w-[70px] text-lg font-semibold"
+                        on:blur={(e) => handleEditedPercentage('UPDATE_PERCENTAGES', "Long Term Savings", e)}
+                    >
+                        {longTermSavingsPercentage}
+                    </div>
+
+                    <span class="text-zinc-500 font-mono">%</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -243,6 +306,8 @@
                                 type="checkbox" 
                                 id="donated"
                                 class="accent-[#72b0cf] cursor-pointer"
+                                checked = {Boolean(t.donated)}
+                                on:change={(e) => handleDonationCheckChange("UPDATE_DONATION", e, t.id)}
                             >
                         </td>
 
