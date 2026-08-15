@@ -34,8 +34,7 @@ SO in summary:
     - Month and year filters for the income statements - DONE
 
     - The user can set a "starting" checking/savings account balance if they want to disregard previous transactions (put in settings menu)
-    - Settings menu to select what categories get added to which income category
-    - CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT (in pos transactions)
+    - Settings menu to select what categories get added to which income category - DONE
 2. A Saving Goals page
     - Displays & allows the user to enter saving goals
 

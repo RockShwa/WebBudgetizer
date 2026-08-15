@@ -33,7 +33,6 @@
     $: shortTermSavingsPercentage = Number(percentageData.find(p => p.category === "Short Term Savings")?.percentage);
     $: savingsOthersPercentage = Number(percentageData.find(p => p.category === "Savings for Others")?.percentage);
 
-    // TODO this should be displayed if I right click on an income amount (should be an instructions box somewhere)
     $: donationsPercentage = Number(percentageData.find(p => p.category === "Donation")?.percentage);;
     $: longTermSavingsPercentage = Number(percentageData.find(p => p.category === "Long Term Savings")?.percentage);;
 
@@ -44,7 +43,28 @@
     let checkingBalance = 0;
 
     $: transactionData = data.transactionData ?? [];
-    let positiveTransactions: Transaction[] = [];
+    let incomeTransactions: Transaction[] = [];
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+        ];
+
+    $: filteredTransactions = transactionData.filter((t: Transaction) => {
+            if (!t.timestamp) return false;
+        
+            const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
+            const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
+            return isCorrectYear && isCorrectMonth;
+    });  
+
+    $: incomeTransactions = transactionData.filter(
+        (transaction) => transaction.category.startsWith("Income")
+    );
+
+    $: monthlyPositiveTransactions = filteredTransactions.filter(
+        (transaction) => transaction.amount > 0
+    );
 
     $: {
         // reset so we dont double count when smth changes
@@ -52,7 +72,7 @@
         shortTermSavings = 0;
         savingsOthers = 0;
 
-        for (const transaction of positiveTransactions) {
+        for (const transaction of incomeTransactions) {
             selfSpending = selfSpending + transaction.amount * (selfSpendingPercentage / 100);
             shortTermSavings = shortTermSavings + transaction.amount * (shortTermSavingsPercentage / 100);
             savingsOthers = savingsOthers + transaction.amount * (savingsOthersPercentage / 100);
@@ -64,20 +84,13 @@
         // for each transaction, I want to look at the category and then determine which income category it subtracts from
         for (const transaction of transactionData) {
 
-            for (const category of categoryData) {
-                if (transaction.category.startsWith(category.name)) {
-                    if (category.includedInChecking) {
-                        checkingBalance = checkingBalance + transaction.amount;
-                    } else if (cateegory.includedInSavings) {
-                        savingsOthers = savingsOthers + transaction.amount;
-                    }
-                }
+            // go find category in category data that matches transaction's category
+            // find out if checkingBalance is checked
+            if (categoryData.find(c => c.name === transaction.category)?.includedInChecking) {
+                checkingBalance = checkingBalance + transaction.amount;
             }
 
-            // iterate through each category: if includesWithChecking is checked, add to checkingBalance. If savings checked, add to savingsBalance
-            if (!transaction.category.startsWith("Gift") && !transaction.category.startsWith("Income") && !transaction.category.startsWith("Savings")) {
-                checkingBalance = checkingBalance + transaction.amount;
-            } else if (transaction.category.startsWith("Gift")) {
+            if (categoryData.find(c => c.name === transaction.category)?.includedInSavings) {
                 savingsOthers = savingsOthers + transaction.amount;
             }
         }
@@ -112,24 +125,6 @@
             }
         }
     }
-
-    const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-        ];
-
-    $: filteredTransactions = transactionData.filter((t: Transaction) => {
-            if (!t.timestamp) return false;
-        
-            const isCorrectMonth = new Date(t.timestamp).getMonth() === monthNames.indexOf(selectedMonth);
-            const isCorrectYear = new Date(t.timestamp).getFullYear() === parseFloat(selectedYear);
-            return isCorrectYear && isCorrectMonth;
-    });  
-
-    // CHANGE TO TRANSACTION.CATEGORY.startsWith("Income") AFTER TESTING WITH THIS TRANSACTION SET SO IMPORTANT
-    $: positiveTransactions = filteredTransactions.filter(
-        (transaction) => transaction.amount > 0
-    );
 
     async function handleEditedPercentage(action: string, categoryName: string, event: Event) {
         const element = event.target as HTMLElement;
@@ -418,7 +413,7 @@
                 </thead>
 
                 <tbody class="divide-y divide-zinc-900">
-                    {#each positiveTransactions as t (t.id)}
+                    {#each monthlyPositiveTransactions as t (t.id)}
                     <tr class="hover:bg-zinc-900/40 transition-colors duration-150 group">
 
                         <td class="p-4 text-zinc-400 font-mono text-xs">
