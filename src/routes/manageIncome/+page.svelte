@@ -40,7 +40,8 @@
     // let startingCheckingBalance = 0;
     // let startingSavingsBalance = 0;
 
-    let checkingBalance = 0;
+    let checkingBalance = 56.60;
+    let savingsBalance = 824.02;
 
     $: transactionData = data.transactionData ?? [];
     let incomeTransactions: Transaction[] = [];
@@ -91,7 +92,7 @@
             }
 
             if (categoryData.find(c => c.name === transaction.category)?.includedInSavings) {
-                savingsOthers = savingsOthers + transaction.amount;
+                savingsBalance = savingsBalance + transaction.amount;
             }
         }
     }
@@ -537,7 +538,7 @@
                     </div>
 
                     <div class="text-3xl font-bold text-white font-mono">
-                        ${(shortTermSavings + savingsOthers).toFixed(2)}
+                        ${(savingsBalance + shortTermSavings + savingsOthers).toFixed(2)}
                     </div>
                 </div>
 

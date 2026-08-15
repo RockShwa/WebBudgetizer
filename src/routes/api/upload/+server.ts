@@ -37,7 +37,7 @@ export async function POST({request}) {
     for (const row of records) {
         await sql.query`
             INSERT INTO Transactions (timestamp, amount, description, category)
-            VALUES (${parseDate(row.Date)}, ${parseFloat(row.Amount)}, ${row.Description}, ${"Unselected"})
+            VALUES (${parseDate(row.Date)}, ${parseFloat(row.Amount.replace(/,/g, ''))}, ${row.Description}, ${"Unselected"})
         `;
     }
 

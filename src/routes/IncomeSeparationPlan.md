@@ -32,9 +32,11 @@ SO in summary:
     - Some way to store whether I donated what I needed to from an income transaction - DONE
     - Right click box with donation & long term savings (add to note) - DONE
     - Month and year filters for the income statements - DONE
-
-    - The user can set a "starting" checking/savings account balance if they want to disregard previous transactions (put in settings menu)
     - Settings menu to select what categories get added to which income category - DONE
+
+    - Redo account balance calculations - should just sum credits and debits
+    - What you want to deduct (and do in settings) is per your income categories 
+    - Not just categorizing income statements
 2. A Saving Goals page
     - Displays & allows the user to enter saving goals
 
