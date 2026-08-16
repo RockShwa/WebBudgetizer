@@ -17,41 +17,60 @@
     $: categoryData = data.categoryData ?? [];
 
     async function handleCheckChange(action: string, event: Event, categoryName: string) {
-        let bitChecking = Number(categoryData.find(c => c.name === categoryName)?.includedInChecking);
-        let bitSavings = Number(categoryData.find(c => c.name === categoryName)?.includedInSavings);
+        let bitSS = Number(categoryData.find(c => c.name === categoryName)?.includedInSelfSpending);
+        let bitSTS = Number(categoryData.find(c => c.name === categoryName)?.includedInShortTermSavings);
+        let bitSO = Number(categoryData.find(c => c.name === categoryName)?.includedInSavingsOthers);
         
-        if (action === 'CHECKING') {
-            if (bitChecking === 0) {
-                bitChecking = 1;
+        if (action === 'SELF SPENDING') {
+            if (bitSS === 0) {
+                bitSS = 1;
             } else {
-                bitChecking = 0;
+                bitSS = 0;
             }
             // query database with input
             await fetch('/api/settings', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    action: 'CHECKING',
+                    action: 'SELF SPENDING',
                     categoryName: categoryName,
-                    isCheckingChecked: bitChecking
+                    isCheckingChecked: bitSS
                 })
             });
         }
 
-        if (action === 'SAVINGS') {
-            if (bitSavings === 0) {
-                bitSavings = 1;
+        if (action === 'SHORT TERM SAVINGS') {
+            if (bitSTS === 0) {
+                bitSTS = 1;
             } else {
-                bitSavings = 0;
+                bitSTS = 0;
             }
             // query database with input
             await fetch('/api/settings', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    action: 'SAVINGS',
+                    action: 'SHORT TERM SAVINGS',
                     categoryName: categoryName,
-                    isSavingsChecked: bitSavings
+                    isSavingsChecked: bitSTS
+                })
+            });
+        }
+
+        if (action === 'SAVINGS FOR OTHERS') {
+            if (bitSO === 0) {
+                bitSO = 1;
+            } else {
+                bitSO = 0;
+            }
+            // query database with input
+            await fetch('/api/settings', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'SAVINGS FOR OTHERS',
+                    categoryName: categoryName,
+                    isSavingsChecked: bitSO
                 })
             });
         }
@@ -73,7 +92,7 @@
                 Income Management Settings
             </h1>
             <p class="text-xs text-zinc-500 mt-1">
-                Choose which categories count toward checking and savings
+                Choose which categories count toward self spending, short terms savings, and savings for others
             </p>
         </div>
 
@@ -102,8 +121,9 @@
             <thead>
                 <tr class="border-b border-zinc-800 bg-zinc-900/60 text-zinc-400 font-semibold tracking-wider text-xs uppercase">
                     <th class="p-4">Category</th>
-                    <th class="p-4">Include in Checking Balance?</th>
-                    <th class="p-4">Include in Savings Balance?</th>
+                    <th class="p-4">Include in Self Spending Balance?</th>
+                    <th class="p-4">Include in Short Term Savings Balance?</th>
+                    <th class="p-4">Include in Savings for Others Balance?</th>
                 </tr>
             </thead>
 
@@ -120,8 +140,8 @@
                             type="checkbox" 
                             id="donated"
                             class="accent-[#72b0cf] cursor-pointer w-4 h-4"
-                            checked = {Boolean(c.includedInChecking)}
-                            on:change={(e) => handleCheckChange("CHECKING", e, c.name)}
+                            checked = {Boolean(c.includedInSelfSpending)}
+                            on:change={(e) => handleCheckChange("SELF SPENDING", e, c.name)}
                         >
                     </td>
 
@@ -130,8 +150,18 @@
                             type="checkbox" 
                             id="donated"
                             class="accent-[#72b0cf] cursor-pointer w-4 h-4"
-                            checked = {Boolean(c.includedInSavings)}
-                            on:change={(e) => handleCheckChange("SAVINGS", e, c.name)}
+                            checked = {Boolean(c.includedInShortTermSavings)}
+                            on:change={(e) => handleCheckChange("SHORT TERM SAVINGS", e, c.name)}
+                        >
+                    </td>
+
+                    <td class="p-4">
+                        <input 
+                            type="checkbox" 
+                            id="donated"
+                            class="accent-[#72b0cf] cursor-pointer w-4 h-4"
+                            checked = {Boolean(c.includedInSavingsOthers)}
+                            on:change={(e) => handleCheckChange("SAVINGS FOR OTHERS", e, c.name)}
                         >
                     </td>
 

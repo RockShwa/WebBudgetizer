@@ -36,13 +36,6 @@
     $: donationsPercentage = Number(percentageData.find(p => p.category === "Donation")?.percentage);;
     $: longTermSavingsPercentage = Number(percentageData.find(p => p.category === "Long Term Savings")?.percentage);;
 
-
-    // let startingCheckingBalance = 0;
-    // let startingSavingsBalance = 0;
-
-    let checkingBalance = 56.60;
-    let savingsBalance = 824.02;
-
     $: transactionData = data.transactionData ?? [];
     let incomeTransactions: Transaction[] = [];
 
@@ -63,9 +56,23 @@
         (transaction) => transaction.category.startsWith("Income")
     );
 
-    $: monthlyPositiveTransactions = filteredTransactions.filter(
-        (transaction) => transaction.amount > 0
+    $: monthlyIncomeTransactions = filteredTransactions.filter(
+        (transaction) => transaction.category.startsWith("Income")
     );
+
+    // Income category calculations
+    // Need to account for transfers -> included in both checkings and savings
+    
+    // Ok wait lets rethink this. What if I only select the categories that I want to detract from the 3 specific categories
+    // So like, only gift detracts from savings for others and only specific categories (entertainment for example) detracts from short term savings
+    // Then, a separate variable is all the credits and debits minus the transactions selected 
+    // Then add separate variable + savings for others + short term savings
+    // SO esseentially select boxes for all 5 categories
+    // Other Checking Transactions, Self Spending, Other Savings Transactions, Savings for Others, and Short Term Savings
+    // Then, you just add the appropriate balances
+
+    // I don't care about totals.
+    // Only need 3 categories, select which ones detract, grab those, add them boom we done
 
     $: {
         // reset so we dont double count when smth changes
@@ -78,21 +85,20 @@
             shortTermSavings = shortTermSavings + transaction.amount * (shortTermSavingsPercentage / 100);
             savingsOthers = savingsOthers + transaction.amount * (savingsOthersPercentage / 100);
         }
-    }
 
-    $: {
-        checkingBalance = 0;
-        // for each transaction, I want to look at the category and then determine which income category it subtracts from
         for (const transaction of transactionData) {
 
             // go find category in category data that matches transaction's category
-            // find out if checkingBalance is checked
-            if (categoryData.find(c => c.name === transaction.category)?.includedInChecking) {
-                checkingBalance = checkingBalance + transaction.amount;
+            if (categoryData.find(c => c.name === transaction.category)?.includedInSelfSpending) {
+                selfSpending = selfSpending + transaction.amount;
             }
 
-            if (categoryData.find(c => c.name === transaction.category)?.includedInSavings) {
-                savingsBalance = savingsBalance + transaction.amount;
+            if (categoryData.find(c => c.name === transaction.category)?.includedInShortTermSavings) {
+                shortTermSavings = shortTermSavings + transaction.amount;
+            }
+
+            if (categoryData.find(c => c.name === transaction.category)?.includedInSavingsOthers) {
+                savingsOthers = savingsOthers + transaction.amount;
             }
         }
     }
@@ -414,7 +420,7 @@
                 </thead>
 
                 <tbody class="divide-y divide-zinc-900">
-                    {#each monthlyPositiveTransactions as t (t.id)}
+                    {#each monthlyIncomeTransactions as t (t.id)}
                     <tr class="hover:bg-zinc-900/40 transition-colors duration-150 group">
 
                         <td class="p-4 text-zinc-400 font-mono text-xs">
@@ -482,23 +488,9 @@
                         Checking Account
                     </h2>
                 </div>
-
-                <span class="text-[10px] font-mono uppercase tracking-wider text-[#72b0cf]">
-                    Checking
-                </span>
             </div>
 
             <div class="p-5 flex flex-col gap-5">
-
-                <div>
-                    <div class="text-xs uppercase tracking-wider text-zinc-500 mb-1">
-                        Total Balance
-                    </div>
-
-                    <div class="text-3xl font-bold text-white font-mono">
-                        ${(checkingBalance + selfSpending).toFixed(2)}
-                    </div>
-                </div>
 
                 <div class="h-px bg-zinc-800"></div>
 
@@ -524,23 +516,9 @@
                         Savings Account
                     </h2>
                 </div>
-
-                <span class="text-[10px] font-mono uppercase tracking-wider text-[#72b0cf]">
-                    Savings
-                </span>
             </div>
 
             <div class="p-5 flex flex-col gap-5">
-
-                <div>
-                    <div class="text-xs uppercase tracking-wider text-zinc-500 mb-1">
-                        Total Balance
-                    </div>
-
-                    <div class="text-3xl font-bold text-white font-mono">
-                        ${(savingsBalance + shortTermSavings + savingsOthers).toFixed(2)}
-                    </div>
-                </div>
 
                 <div class="h-px bg-zinc-800"></div>
 

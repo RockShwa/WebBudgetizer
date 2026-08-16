@@ -34,9 +34,9 @@ SO in summary:
     - Month and year filters for the income statements - DONE
     - Settings menu to select what categories get added to which income category - DONE
 
-    - Redo account balance calculations - should just sum credits and debits
-    - What you want to deduct (and do in settings) is per your income categories 
-    - Not just categorizing income statements
+    - Redo account balance calculations - should just sum credits and debits - DONE
+    - What you want to deduct (and do in settings) is per your income categories - DONE
+    - Not just categorizing income statements - DONE
 2. A Saving Goals page
     - Displays & allows the user to enter saving goals
 

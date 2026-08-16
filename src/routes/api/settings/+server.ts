@@ -3,20 +3,26 @@ import sql from "mssql"
 import { config } from '$lib/server/db.js';
 
 export async function PATCH({ request }) {
-    const { action, categoryName, isCheckingChecked, isSavingsChecked } = await request.json();
+    const { action, categoryName, isSelfSpendingChecked, isShortTermSavingsChecked, isSavingsOthersChecked } = await request.json();
 
     await sql.connect(config);
 
-    if (action === 'CHECKING') {
+    if (action === 'SELF SPENDING') {
         await sql.query`
             UPDATE Categories
-            SET includedInChecking = ${isCheckingChecked}
+            SET includedInSelfSpending = ${isSelfSpendingChecked}
             WHERE name = ${categoryName}`;
     }        
-    if (action === 'SAVINGS') {
+    if (action === 'SHORT TERM SAVINGS') {
         await sql.query`
             UPDATE Categories
-            SET includedInSavings = ${isSavingsChecked}
+            SET includedInShortTermSavings = ${isShortTermSavingsChecked}
+            WHERE name = ${categoryName}`;
+    }
+    if (action === 'SAVINGS FOR OTHERS') {
+        await sql.query`
+            UPDATE Categories
+            SET includedInSavingsOthers = ${isSavingsOthersChecked}
             WHERE name = ${categoryName}`;
     }
 

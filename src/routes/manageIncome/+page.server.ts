@@ -5,7 +5,7 @@ export async function load() {
         `SELECT id, timestamp, amount, category, description, donated FROM Transactions`
     );
     const categoryData = await queryDatabase(`
-        SELECT name, goal, defaultGoal, includedInChecking, includedInSavings FROM Categories
+        SELECT name, goal, defaultGoal, includedInSelfSpending, includedInShortTermSavings, includedInSavingsOthers FROM Categories
     `);
     const settingData = await queryDatabase(`
         SELECT startingCheckingAmount, startingSavingsAmount FROM Settings

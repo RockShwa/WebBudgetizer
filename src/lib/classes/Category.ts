@@ -2,8 +2,9 @@ export class Category {
     name: string = "";
     goal: number = 0;
     defaultGoal: number = 0;
-    includedInChecking: number = 0;
-    includedInSavings: number = 0;
+    includedInSelfSpending: number = 0;
+    includedInShortTermSavings: number = 0;
+    includedInSavingsOthers: number = 0;
 
     constructor(init: Partial<Category>) {
         Object.assign(this, init)
