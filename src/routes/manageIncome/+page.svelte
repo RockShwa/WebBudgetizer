@@ -492,14 +492,12 @@
 
             <div class="p-5 flex flex-col gap-5">
 
-                <div class="h-px bg-zinc-800"></div>
-
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-zinc-400">
+                    <span class="text-sm font-bold text-zinc-400">
                         Personal Spending
                     </span>
 
-                    <span class="text-sm font-semibold text-[#72b0cf] font-mono">
+                    <span class="text-sm font-bold text-[#72b0cf] font-mono">
                         ${selfSpending.toFixed(2)}
                     </span>
                 </div>
@@ -520,24 +518,22 @@
 
             <div class="p-5 flex flex-col gap-5">
 
-                <div class="h-px bg-zinc-800"></div>
-
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-zinc-400">
+                    <span class="text-sm font-bold text-zinc-400">
                         Short Term Savings
                     </span>
 
-                    <span class="text-sm font-semibold text-[#72b0cf] font-mono">
+                    <span class="text-sm font-bold text-[#72b0cf] font-mono">
                         ${shortTermSavings.toFixed(2)}
                     </span>
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <span class="text-sm text-zinc-400">
+                    <span class="text-sm font-bold text-zinc-400">
                         Savings for Others
                     </span>
 
-                    <span class="text-sm font-semibold text-[#72b0cf] font-mono">
+                    <span class="text-sm font-bold text-[#72b0cf] font-mono">
                         ${savingsOthers.toFixed(2)}
                     </span>
                 </div>

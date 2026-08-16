@@ -4,6 +4,7 @@
 
 <svelte:head>
     <title>Dashboard | FreeBudgetPro</title>
+    <link rel="icon" href="/favicon.ico" />
 </svelte:head>
 
 <main class="min-h-screen bg-black text-white flex flex-col justify-center p-6 relative overflow-hidden">
