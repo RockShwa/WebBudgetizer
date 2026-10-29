@@ -72,10 +72,10 @@
     }
 
     $: categoryTotals = categoryData.map(c => {
-        const total = Math.abs(calculateCategorySum(c, selectedMonth, selectedYear));
+        const total = Math.round(Math.abs(calculateCategorySum(c, selectedMonth, selectedYear)) * 100) / 100;
 
         const activeGoal = c.goal !== 0 ? c.goal : c.defaultGoal;
-        const diff = activeGoal - total;
+        const diff = Math.round((activeGoal - total) * 100) / 100;
 
         return {
             name: c.name,
@@ -85,13 +85,30 @@
     });
 
 
-    let selectedMonth = "July";
-    let selectedYear = "2024";
+    let selectedMonth = "";
+    let selectedYear = "";
 
     const monthNames = [
         "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
+
+    let initialized = false;
+
+    $: {
+        if (!initialized && transactionData.length > 0) {
+            const latestTransaction = transactionData.reduce((latest, current) => {
+                return new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest;
+            });
+
+            const latestDate = new Date(latestTransaction.timestamp);
+
+            selectedMonth = monthNames[latestDate.getMonth()];
+            selectedYear = latestDate.getFullYear().toString();
+
+            initialized = true;
+        }
+    }
 
     function createYearOptions() {
         const yearSelect = document.getElementById('year-select');
