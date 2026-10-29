@@ -17,6 +17,25 @@
     onMount(() => {
         createYearOptions();
         createMonthOptions();
+
+        const saved = localStorage.getItem('excludedCategories');
+
+        if (saved) {
+            try {
+                const parsed: unknown = JSON.parse(saved);
+
+                if (
+                    Array.isArray(parsed) &&
+                    parsed.every((item): item is string =>
+                        typeof item === 'string'
+                    )
+                ) {
+                    excludedCategories = parsed;
+                }
+            } catch {
+                excludedCategories = [];
+            }
+        }
     });
 
     async function handleAddCategory() {
@@ -166,6 +185,31 @@
 
         return categorySum;    
     }
+
+    let settingsOpen = false;
+    let excludedCategories: string[] = [];
+
+    function handleSettings() {
+        settingsOpen = true
+    }
+
+    function toggleExcludedCategory(name: string, checked: boolean) {
+        if (checked) {
+            if (!excludedCategories.includes(name)) {
+                excludedCategories = [...excludedCategories, name];
+            }
+        } else {
+            excludedCategories = excludedCategories.filter(
+                category => category !== name
+            );
+        }
+
+        localStorage.setItem(
+            'excludedCategories',
+            JSON.stringify(excludedCategories)
+        )
+    }
+
 </script>
 
 <svelte:head>
@@ -202,6 +246,11 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
+            <button type ="button" class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 flex items-center
+            gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer" on:click = {() => handleSettings()}>
+                Settings
+            </button>
+
             <label class="text-xs font-bold tracking-wide uppercase bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 flex items-center gap-2 text-zinc-400 focus-within:border-[#72b0cf] transition-colors cursor-pointer">
                 Month
                 <select class="bg-transparent text-white font-medium outline-none ml-1 cursor-pointer" id="month-select" bind:value={selectedMonth}>
@@ -229,7 +278,9 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-900">
-                {#each categoryData as c (c.name)}
+                {#each categoryData.filter(
+                    c => !excludedCategories.includes(c.name)
+                ) as c (c.name)}
                 <tr class="hover:bg-zinc-900/20 transition-colors duration-150">
                     <td class="p-4 font-semibold text-zinc-200">
                         {c.name}
@@ -283,6 +334,94 @@
             </tbody>
         </table>
     </div> 
+
+    {#if settingsOpen}
+        <div
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            role="presentation"
+            on:click={(event) => {
+                if (event.target === event.currentTarget) {
+                    settingsOpen = false;
+                }
+            }}
+        >
+            <div
+                class="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="settings-title"
+            >
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-zinc-800 p-5">
+                    <div>
+                        <h2
+                            id="settings-title"
+                            class="text-xl font-black text-white"
+                        >
+                            Category Settings
+                        </h2>
+                        <p class="mt-1 text-sm text-zinc-400">
+                            Choose which categories appear on the page.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="rounded-lg px-3 py-2 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                        aria-label="Close settings"
+                        on:click={() => settingsOpen = false}
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Category checkboxes -->
+                <div class="max-h-80 overflow-y-auto p-5">
+                    {#each categoryData as c (c.name)}
+                        <label
+                            class="flex cursor-pointer items-center justify-between gap-4 rounded-lg px-3 py-3 hover:bg-zinc-900"
+                        >
+                            <span class="font-medium text-zinc-200">
+                                {c.name}
+                            </span>
+
+                            <input
+                                type="checkbox"
+                                checked={excludedCategories.includes(c.name)}
+                                on:change={(event) =>
+                                    toggleExcludedCategory(
+                                        c.name,
+                                        event.currentTarget.checked
+                                    )}
+                                class="h-4 w-4 accent-[#72b0cf]"
+                            />
+                        </label>
+                    {/each}
+
+                    {#if categoryData.length === 0}
+                        <p class="text-sm text-zinc-500">
+                            No categories available.
+                        </p>
+                    {/if}
+                </div>
+
+                <!-- Footer -->
+                <div class="flex items-center justify-between border-t border-zinc-800 p-5">
+                    <span class="text-xs text-zinc-500">
+                        {excludedCategories.length} excluded
+                    </span>
+
+                    <button
+                        type="button"
+                        class="rounded-lg bg-[#72b0cf] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-black hover:bg-[#5fa1c2]"
+                        on:click={() => settingsOpen = false}
+                    >
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    {/if}
 </main>
 
 <style>
